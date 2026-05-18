@@ -1,0 +1,17 @@
+kind = "web"
+previewPath = "/skyroute-html"
+title = "SkyRoute Website"
+version = "1.0.0"
+id = "artifacts/skyroute-html"
+router = "path"
+
+[[services]]
+name = "web"
+paths = [ "/skyroute-html" ]
+localPort = 3001
+
+[services.development]
+run = "pnpm --filter @workspace/skyroute-html run dev"
+
+[services.env]
+PORT = "3001"

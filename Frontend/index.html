@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SkyRoute – Smart Flight Route Planner</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body class="page-wrapper">
+  <script>window._activePage='index.html';</script>
+
+  <div id="navbar-container"></div>
+
+  <main>
+    <!-- Hero -->
+    <section class="hero">
+      <div class="hero-bg"></div>
+      <div class="container hero-content">
+        <div class="hero-tag">✈ Powered by Dijkstra's Algorithm</div>
+        <h1 class="hero-title">
+          Plan Smarter<br><span class="text-primary">Flight Routes</span>
+        </h1>
+        <p class="hero-sub">
+          Find the optimal path between any of our 47 global airports across 7 regions —
+          optimise by distance, time, or cost.
+        </p>
+        <div class="hero-actions">
+          <a href="dashboard.html" class="btn btn-primary btn-lg">🗺 Start Planning</a>
+          <a href="signup.html" class="btn btn-outline btn-lg">Create Free Account</a>
+        </div>
+
+        <div class="hero-visual">
+          <div class="hero-card">
+            <div class="hero-route-display">
+              <div class="hero-airport">
+                <div class="hero-airport-code">JFK</div>
+                <div class="hero-airport-name">New York</div>
+              </div>
+              <div class="hero-arrow">→</div>
+              <div class="hero-airport">
+                <div class="hero-airport-code">SIN</div>
+                <div class="hero-airport-name">Singapore</div>
+              </div>
+            </div>
+            <div class="hero-route-path">
+              <span class="hero-node start">JFK</span>
+              <span class="hero-dash">───</span>
+              <span class="hero-node">LHR</span>
+              <span class="hero-dash">───</span>
+              <span class="hero-node">DXB</span>
+              <span class="hero-dash">───</span>
+              <span class="hero-node end">SIN</span>
+            </div>
+            <div style="display:flex;gap:10px;margin-top:12px;padding-top:12px;border-top:1px solid var(--border)">
+              <span class="badge badge-primary">📍 15,887 km</span>
+              <span class="badge badge-success">⏱ 19h 45m</span>
+              <span class="badge badge-orange">💵 $2,090</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Network stats -->
+        <div class="stat-pills" style="justify-content:center;margin-top:32px">
+          <div class="stat-pill"><span style="color:var(--primary)">✦</span><span class="stat-pill-value text-primary">47</span><span style="color:var(--muted);font-size:13px">Airports</span></div>
+          <div class="stat-pill"><span style="color:#0ea5e9">●</span><span class="stat-pill-value" style="color:#0ea5e9">21</span><span style="color:var(--muted);font-size:13px">Major Hubs</span></div>
+          <div class="stat-pill"><span style="color:#8b5cf6">●</span><span class="stat-pill-value" style="color:#8b5cf6">8</span><span style="color:var(--muted);font-size:13px">International</span></div>
+          <div class="stat-pill"><span style="color:#10b981">●</span><span class="stat-pill-value" style="color:#10b981">18</span><span style="color:var(--muted);font-size:13px">National</span></div>
+          <div class="stat-pill"><span style="color:#f97316">●</span><span class="stat-pill-value" style="color:#f97316">7</span><span style="color:var(--muted);font-size:13px">Regions</span></div>
+          <div class="stat-pill"><span style="color:var(--muted)">⇌</span><span class="stat-pill-value">264</span><span style="color:var(--muted);font-size:13px">Routes</span></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Features -->
+    <section class="features">
+      <div class="container">
+        <div class="section-tag">✦ Features</div>
+        <h2 class="section-title">Everything you need to plan the perfect route</h2>
+        <div class="features-grid">
+          <div class="feature-card">
+            <div class="feature-icon">🧮</div>
+            <div class="feature-title">Dijkstra's Algorithm</div>
+            <div class="feature-desc">Guaranteed-optimal shortest path computed in milliseconds across a weighted flight graph.</div>
+          </div>
+          <div class="feature-card">
+            <div class="feature-icon">🌍</div>
+            <div class="feature-title">Global Coverage</div>
+            <div class="feature-desc">47 airports spanning North America, Europe, Middle East, Africa, Asia, and Oceania.</div>
+          </div>
+          <div class="feature-card">
+            <div class="feature-icon">🗺</div>
+            <div class="feature-title">Interactive Map</div>
+            <div class="feature-desc">Great-circle arc routes drawn on a live Leaflet map with airport markers and popups.</div>
+          </div>
+          <div class="feature-card">
+            <div class="feature-icon">⚙</div>
+            <div class="feature-title">3 Optimisation Modes</div>
+            <div class="feature-desc">Optimise your route by shortest distance, fastest time, or lowest ticket cost.</div>
+          </div>
+          <div class="feature-card">
+            <div class="feature-icon">✈</div>
+            <div class="feature-title">18 Airlines</div>
+            <div class="feature-desc">Routes operated by Emirates, Singapore Airlines, Qantas, IndiGo, AirAsia, and 13 more.</div>
+          </div>
+          <div class="feature-card">
+            <div class="feature-icon">🌙</div>
+            <div class="feature-title">Dark & Light Mode</div>
+            <div class="feature-desc">Full dark mode support with persisted preference and matching map tile layers.</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Airport types -->
+    <section class="types-section">
+      <div class="container">
+        <div class="section-tag">✦ Network</div>
+        <h2 class="section-title">National &amp; International Coverage</h2>
+        <p class="section-sub">Our network covers all three airport categories across every major world region.</p>
+        <div class="types-grid">
+          <div class="type-card">
+            <div class="type-dot" style="background:#0ea5e9"></div>
+            <div class="type-count" style="color:#0ea5e9">21</div>
+            <div class="type-label">Major Hubs</div>
+            <div style="font-size:11px;color:var(--subtle);margin-top:6px">JFK · LHR · DXB · SIN · NRT…</div>
+          </div>
+          <div class="type-card">
+            <div class="type-dot" style="background:#8b5cf6"></div>
+            <div class="type-count" style="color:#8b5cf6">8</div>
+            <div class="type-label">International Airports</div>
+            <div style="font-size:11px;color:var(--subtle);margin-top:6px">AMS · MAD · FCO · KUL · JNB…</div>
+          </div>
+          <div class="type-card">
+            <div class="type-dot" style="background:#10b981"></div>
+            <div class="type-count" style="color:#10b981">18</div>
+            <div class="type-label">National / Domestic</div>
+            <div style="font-size:11px;color:var(--subtle);margin-top:6px">EDI · MAN · BLR · MEL · DEN…</div>
+          </div>
+          <div class="type-card">
+            <div class="type-dot" style="background:#f97316"></div>
+            <div class="type-count" style="color:#f97316">7</div>
+            <div class="type-label">World Regions</div>
+            <div style="font-size:11px;color:var(--subtle);margin-top:6px">Americas · Europe · Asia · Oceania…</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- CTA -->
+    <section class="cta-section">
+      <div class="container">
+        <div class="cta-box">
+          <div class="cta-title">Ready to find your optimal route?</div>
+          <div class="cta-sub">Open the planner and let Dijkstra's algorithm do the work.</div>
+          <div style="display:flex;gap:12px;justify-content:center;flex-wrap:wrap">
+            <a href="dashboard.html" class="btn btn-white btn-lg">Open Route Planner</a>
+            <a href="signup.html" class="btn btn-lg" style="border:2px solid rgba(255,255,255,.4);color:#fff;">Create Account</a>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <div id="footer-container"></div>
+
+  <script src="js/data.js"></script>
+  <script src="js/dijkstra.js"></script>
+  <script src="js/main.js"></script>
+</body>
+</html>

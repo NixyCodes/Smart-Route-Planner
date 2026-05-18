@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Create Account – SkyRoute</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <script>
+    try { if (JSON.parse(localStorage.getItem('skyroute_user'))) location.href='dashboard.html'; } catch(e){}
+  </script>
+
+  <div class="auth-page">
+    <!-- Left panel -->
+    <div class="auth-left">
+      <div class="auth-left-content">
+        <div class="auth-left-icon">✈</div>
+        <h2 class="auth-left-title">Join SkyRoute</h2>
+        <p class="auth-left-sub">Unlock the full power of intelligent flight route planning across 47 airports worldwide.</p>
+        <div class="auth-perks">
+          <div class="auth-perk"><div class="auth-perk-check">✓</div>Plan national &amp; international routes</div>
+          <div class="auth-perk"><div class="auth-perk-check">✓</div>Optimise by distance, time, or cost</div>
+          <div class="auth-perk"><div class="auth-perk-check">✓</div>Interactive great-circle map</div>
+          <div class="auth-perk"><div class="auth-perk-check">✓</div>Access 18 airlines &amp; 8 aircraft types</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Right form -->
+    <div class="auth-right">
+      <div class="auth-form-wrap">
+        <div class="auth-brand-mobile">
+          <div class="brand-icon">✈</div>
+          Sky<span class="text-primary">Route</span>
+        </div>
+
+        <h1 class="auth-title">Create your account</h1>
+        <p class="auth-sub">Already have one? <a href="login.html">Sign in instead</a></p>
+
+        <form class="auth-form" id="signup-form" novalidate>
+          <div class="form-group">
+            <label class="form-label">Full name</label>
+            <div class="input-wrap">
+              <span class="input-icon">👤</span>
+              <input type="text" id="name" class="form-input has-icon" placeholder="John Doe" autocomplete="name">
+            </div>
+            <span class="form-error" id="name-err">Name must be at least 2 characters.</span>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Email address</label>
+            <div class="input-wrap">
+              <span class="input-icon">✉</span>
+              <input type="email" id="email" class="form-input has-icon" placeholder="you@example.com" autocomplete="email">
+            </div>
+            <span class="form-error" id="email-err">Please enter a valid email address.</span>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Password</label>
+            <div class="input-wrap">
+              <span class="input-icon">🔒</span>
+              <input type="password" id="password" class="form-input has-icon" placeholder="At least 8 characters" autocomplete="new-password" style="padding-right:42px" id="password">
+              <button type="button" class="pass-toggle" id="pass-toggle1">👁</button>
+            </div>
+            <div class="strength-bar" id="strength-bar" style="display:none">
+              <div class="strength-seg" id="seg1"></div>
+              <div class="strength-seg" id="seg2"></div>
+              <div class="strength-seg" id="seg3"></div>
+            </div>
+            <span class="form-error" id="pass-err">Password must be at least 8 characters.</span>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Confirm password</label>
+            <div class="input-wrap">
+              <span class="input-icon">🔒</span>
+              <input type="password" id="confirm" class="form-input has-icon" placeholder="Re-enter your password" autocomplete="new-password" style="padding-right:42px">
+              <button type="button" class="pass-toggle" id="pass-toggle2">👁</button>
+            </div>
+            <span class="form-error" id="confirm-err">Passwords do not match.</span>
+          </div>
+
+          <button type="submit" class="btn btn-primary btn-full btn-lg" id="submit-btn">
+            Create Account →
+          </button>
+        </form>
+
+        <div class="auth-footer">
+          By signing up, you agree to our <a href="#">Terms</a> and <a href="#">Privacy Policy</a>.
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="js/data.js"></script>
+  <script src="js/dijkstra.js"></script>
+  <script src="js/main.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', () => applyTheme(getTheme()));
+
+    const passEl   = document.getElementById('password');
+    const toggle1  = document.getElementById('pass-toggle1');
+    const toggle2  = document.getElementById('pass-toggle2');
+    const confirmEl= document.getElementById('confirm');
+    const submitBtn= document.getElementById('submit-btn');
+    const strBar   = document.getElementById('strength-bar');
+
+    toggle1.addEventListener('click', () => {
+      const show = passEl.type === 'password';
+      passEl.type = show ? 'text' : 'password';
+      toggle1.textContent = show ? '🙈' : '👁';
+    });
+    toggle2.addEventListener('click', () => {
+      const show = confirmEl.type === 'password';
+      confirmEl.type = show ? 'text' : 'password';
+      toggle2.textContent = show ? '🙈' : '👁';
+    });
+
+    passEl.addEventListener('input', () => {
+      const v = passEl.value;
+      if (!v) { strBar.style.display='none'; return; }
+      strBar.style.display = 'flex';
+      const strength = v.length < 6 ? 1 : v.length < 10 ? 2 : 3;
+      const cls = ['','weak','good','strong'];
+      ['seg1','seg2','seg3'].forEach((id, i) => {
+        const el = document.getElementById(id);
+        el.className = 'strength-seg' + (strength > i ? ' ' + cls[strength] : '');
+      });
+    });
+
+    function showError(id, show) {
+      const el = document.getElementById(id);
+      if (show) el.classList.add('show'); else el.classList.remove('show');
+    }
+
+    document.getElementById('signup-form').addEventListener('submit', e => {
+      e.preventDefault();
+      const name  = document.getElementById('name').value.trim();
+      const email = document.getElementById('email').value.trim();
+      const pass  = passEl.value;
+      const conf  = confirmEl.value;
+      let valid   = true;
+
+      if (name.length < 2)  { showError('name-err', true);    valid = false; } else showError('name-err', false);
+      if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) { showError('email-err', true); valid = false; } else showError('email-err', false);
+      if (pass.length < 8)  { showError('pass-err', true);    valid = false; } else showError('pass-err', false);
+      if (pass !== conf)    { showError('confirm-err', true);  valid = false; } else showError('confirm-err', false);
+      if (!valid) return;
+
+      submitBtn.disabled = true;
+      submitBtn.innerHTML = '<span class="spinner"></span> Creating account…';
+      setTimeout(() => {
+        saveUser({ name, email });
+        window.location.href = 'dashboard.html';
+      }, 1500);
+    });
+  </script>
+</body>
+</html>

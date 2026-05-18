@@ -1,0 +1,365 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dashboard – SkyRoute</title>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+
+<body class="page-wrapper">
+  <script>window._activePage = 'dashboard.html';</script>
+
+  <div id="navbar-container"></div>
+
+  <main>
+    <div class="container dashboard">
+      <!-- Header -->
+      <div class="dash-header">
+        <div class="section-tag">🗺 Route Planner</div>
+        <h1 class="dash-title">Find Your Optimal Flight Path</h1>
+        <p class="dash-sub">47 airports · 264 routes · Dijkstra's algorithm computes the optimal path instantly.</p>
+        <div class="stat-pills" style="margin-top:16px">
+          <div class="stat-pill"><span style="color:#0ea5e9">●</span><span class="stat-pill-value"
+              style="color:#0ea5e9">21</span><span style="font-size:12px;color:var(--muted)">Hubs</span></div>
+          <div class="stat-pill"><span style="color:#8b5cf6">●</span><span class="stat-pill-value"
+              style="color:#8b5cf6">8</span><span style="font-size:12px;color:var(--muted)">International</span></div>
+          <div class="stat-pill"><span style="color:#10b981">●</span><span class="stat-pill-value"
+              style="color:#10b981">18</span><span style="font-size:12px;color:var(--muted)">National / Domestic</span>
+          </div>
+          <div class="stat-pill"><span style="color:var(--muted)">⇌</span><span class="stat-pill-value">264</span><span
+              style="font-size:12px;color:var(--muted)">Segments</span></div>
+        </div>
+      </div>
+
+      <div class="dash-layout">
+        <!-- Left column -->
+        <div>
+          <!-- Search panel -->
+          <div class="search-panel">
+            <div class="airports-row">
+              <div class="form-group">
+                <label class="form-label">📍 Origin Airport</label>
+                <div class="input-wrap">
+                  <select class="form-select" id="origin-select"></select>
+                  <span class="select-arrow">▾</span>
+                </div>
+                <div style="font-size:11px;color:var(--muted);margin-top:4px" id="origin-info"></div>
+              </div>
+
+              <div style="display:flex;align-items:flex-end;padding-bottom:22px">
+                <button class="swap-btn" id="swap-btn" title="Swap airports">⇄</button>
+              </div>
+
+              <div class="form-group">
+                <label class="form-label">✈ Destination Airport</label>
+                <div class="input-wrap">
+                  <select class="form-select" id="dest-select"></select>
+                  <span class="select-arrow">▾</span>
+                </div>
+                <div style="font-size:11px;color:var(--muted);margin-top:4px" id="dest-info"></div>
+              </div>
+            </div>
+
+            <div class="optimize-label">Optimise By</div>
+            <div class="optimize-grid">
+              <button class="opt-btn active" data-opt="distance" id="opt-distance">
+                <span class="opt-btn-icon">📍</span>
+                <span>Shortest Distance</span>
+                <span class="opt-btn-desc">Minimise km</span>
+              </button>
+              <button class="opt-btn" data-opt="time" id="opt-time">
+                <span class="opt-btn-icon">⏱</span>
+                <span>Fastest Time</span>
+                <span class="opt-btn-desc">Minimise hours</span>
+              </button>
+              <button class="opt-btn" data-opt="cost" id="opt-cost">
+                <span class="opt-btn-icon">💵</span>
+                <span>Lowest Cost</span>
+                <span class="opt-btn-desc">Cheapest route</span>
+              </button>
+            </div>
+
+            <button class="btn btn-primary btn-full btn-lg" id="search-btn">
+              ⚡ Find Optimal Route
+            </button>
+            <div id="same-error"
+              style="display:none;font-size:12px;color:var(--danger);text-align:center;margin-top:8px">Origin and
+              destination must be different airports.</div>
+
+            <!-- Popular routes -->
+            <div class="popular-label">Popular Routes</div>
+            <div class="popular-routes" id="popular-routes"></div>
+          </div>
+
+          <!-- Results -->
+          <div class="results-area" id="results-area"></div>
+        </div>
+
+        <!-- Right column – Map -->
+        <div>
+          <div class="map-panel" style="position:sticky;top:80px">
+            <div class="map-header">
+              <div class="map-title">🗺 Flight Map</div>
+              <span class="badge badge-muted" id="map-status">All airports shown</span>
+            </div>
+            <div id="map-container"></div>
+            <div class="map-footer" id="map-footer">Click any airport marker for details · Scroll to zoom</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <div id="footer-container"></div>
+
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <script src="js/data.js"></script>
+  <script src="js/dijkstra.js"></script>
+  <script src="js/main.js"></script>
+  <script>
+    // ── State ────────────────────────────────────────────────────
+    let currentSource = 'JFK';
+    let currentDest = 'SIN';
+    let currentOpt = 'distance';
+    let currentResult = null;
+
+    // ── Populate selects ─────────────────────────────────────────
+    function populateSelects() {
+      const originSel = document.getElementById('origin-select');
+      const destSel = document.getElementById('dest-select');
+      originSel.innerHTML = buildAirportOptions(currentSource);
+      destSel.innerHTML = buildAirportOptions(currentDest);
+      updateAirportInfo();
+    }
+
+    function updateAirportInfo() {
+      const o = AIRPORT_MAP[currentSource];
+      const d = AIRPORT_MAP[currentDest];
+      if (o) document.getElementById('origin-info').textContent = o.airport;
+      if (d) document.getElementById('dest-info').textContent = d.airport;
+    }
+
+    // ── Optimise buttons ─────────────────────────────────────────
+    document.querySelectorAll('.opt-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        document.querySelectorAll('.opt-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        currentOpt = btn.dataset.opt;
+        clearResults();
+      });
+    });
+
+    // ── Select change ────────────────────────────────────────────
+    document.addEventListener('change', e => {
+      if (e.target.id === 'origin-select') { currentSource = e.target.value; updateAirportInfo(); clearResults(); }
+      if (e.target.id === 'dest-select') { currentDest = e.target.value; updateAirportInfo(); clearResults(); }
+    });
+
+    // ── Swap ─────────────────────────────────────────────────────
+    document.getElementById('swap-btn').addEventListener('click', () => {
+      [currentSource, currentDest] = [currentDest, currentSource];
+      document.getElementById('origin-select').innerHTML = buildAirportOptions(currentSource);
+      document.getElementById('dest-select').innerHTML = buildAirportOptions(currentDest);
+      updateAirportInfo();
+      clearResults();
+    });
+
+    // ── Popular routes ───────────────────────────────────────────
+    function renderPopular() {
+      const container = document.getElementById('popular-routes');
+      container.innerHTML = POPULAR_ROUTES.map(r => {
+        const tagClass = (r.tag === 'National' || r.tag === 'Domestic') ? 'badge-success' : 'badge-purple';
+        return `<button class="route-chip" data-from="${r.from}" data-to="${r.to}">
+          ✈ ${r.label} <span class="badge ${tagClass}">${r.tag}</span>
+        </button>`;
+      }).join('');
+
+      container.querySelectorAll('.route-chip').forEach(btn => {
+        btn.addEventListener('click', () => {
+          currentSource = btn.dataset.from;
+          currentDest = btn.dataset.to;
+          document.getElementById('origin-select').innerHTML = buildAirportOptions(currentSource);
+          document.getElementById('dest-select').innerHTML = buildAirportOptions(currentDest);
+          updateAirportInfo();
+          clearResults();
+        });
+      });
+    }
+
+    // ── Search ───────────────────────────────────────────────────
+    document.getElementById('search-btn').addEventListener('click', doSearch);
+
+    async function doSearch() {
+
+      const sameErr = document.getElementById('same-error');
+
+      if (currentSource === currentDest) {
+
+        sameErr.style.display = 'block';
+
+        return;
+      }
+
+      sameErr.style.display = 'none';
+
+      const btn = document.getElementById('search-btn');
+
+      btn.disabled = true;
+
+      btn.innerHTML = '<span class="spinner"></span> Computing optimal route…';
+
+      document.getElementById('results-area').innerHTML = `
+    <div class="loading-state">
+      <div class="loading-ring"></div>
+      <div class="loading-text">
+        Running Dijkstra's algorithm across the flight graph…
+      </div>
+    </div>`;
+
+      setTimeout(async () => {
+
+        try {
+
+          const response = await fetch('http://localhost:5000/shortest-path', {
+
+            method: 'POST',
+
+            headers: {
+              'Content-Type': 'application/json'
+            },
+
+            body: JSON.stringify({
+              source: currentSource,
+              destination: currentDest,
+              optimizeBy: currentOpt
+            })
+
+          });
+
+          const data = await response.json();
+
+          currentResult = data;
+
+          renderResults(currentResult);
+
+          updateMap();
+
+        } catch (error) {
+
+          console.error(error);
+
+          alert('Failed to fetch route from backend');
+
+        } finally {
+
+          btn.disabled = false;
+
+          btn.innerHTML = '⚡ Find Optimal Route';
+        }
+
+      }, 600);
+    };
+    function clearResults() {
+
+      currentResult = null;
+
+      document.getElementById('results-area').innerHTML = '';
+
+      document.getElementById('same-error').style.display = 'none';
+
+      updateMap();
+    };
+
+    // ── Render results ───────────────────────────────────────────
+    function renderResults(result) {
+      const area = document.getElementById('results-area');
+      if (!result.found) {
+        area.innerHTML = `<div class="card" style="margin-top:16px;text-align:center;padding:36px">
+          <div class="no-route-icon">✈</div>
+          <div style="font-weight:700;font-size:15px;margin-bottom:6px">No Route Found</div>
+          <div style="font-size:13px;color:var(--muted)">There's no connected path between ${currentSource} and ${currentDest} in the current network.</div>
+        </div>`;
+        return;
+      }
+
+      const segCount = result.steps.length;
+      const stepsHTML = result.steps.map((step, i) => `
+        <div class="segment-row">
+          <div class="segment-num">${i + 1}</div>
+          <div class="segment-info">
+            <div class="segment-route">${step.fromName} → ${step.toName}</div>
+            <div class="segment-meta">✈ ${step.airline} · ${step.aircraft}</div>
+          </div>
+          <div class="segment-stats">
+            <div class="seg-stat"><div class="seg-stat-val">${step.distance.toLocaleString()} km</div><div class="seg-stat-lbl">dist</div></div>
+            <div class="seg-stat"><div class="seg-stat-val">${formatTime(step.time)}</div><div class="seg-stat-lbl">time</div></div>
+            <div class="seg-stat"><div class="seg-stat-val">$${step.cost.toLocaleString()}</div><div class="seg-stat-lbl">cost</div></div>
+          </div>
+        </div>`).join('');
+
+      const nodesHTML = result.path.map((id, i) => {
+        const cls = i === 0 ? 'origin' : i === result.path.length - 1 ? 'dest' : '';
+        return `<span class="route-node ${cls}">${id}</span>${i < result.path.length - 1 ? '<span class="route-arrow">→</span>' : ''}`;
+      }).join('');
+
+      area.innerHTML = `
+        <div style="margin-top:16px;display:flex;flex-direction:column;gap:12px">
+          <div class="stat-cards">
+            <div class="stat-card">
+              <div class="stat-icon">📍</div>
+              <div class="stat-value">${result.totalDistance.toLocaleString()} km</div>
+              <div class="stat-label">Total Distance</div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-icon">⏱</div>
+              <div class="stat-value">${formatTime(result.totalTime)}</div>
+              <div class="stat-label">Total Time</div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-icon">💵</div>
+              <div class="stat-value">$${result.totalCost.toLocaleString()}</div>
+              <div class="stat-label">Total Cost</div>
+            </div>
+          </div>
+
+          <div class="route-path-card">
+            <div class="route-path-header">
+              <span style="font-size:18px">🛣</span>
+              <span class="route-path-title">Optimal Route</span>
+              <span class="badge badge-primary">${segCount} segment${segCount > 1 ? 's' : ''}</span>
+            </div>
+            <div class="route-path-nodes">${nodesHTML}</div>
+            <div class="segment-list">${stepsHTML}</div>
+          </div>
+        </div>`;
+    }
+
+    // ── Map update ───────────────────────────────────────────────
+    function updateMap() {
+      initMap('map-container', currentResult, currentSource, currentDest);
+      const status = document.getElementById('map-status');
+      const footer = document.getElementById('map-footer');
+      if (currentResult?.found) {
+        status.textContent = 'Route active';
+        status.className = 'badge badge-success';
+        footer.textContent = `Route: ${currentResult.path.join(' → ')} · Click markers for details`;
+      } else {
+        status.textContent = 'All airports shown';
+        status.className = 'badge badge-muted';
+        footer.textContent = 'Search a route to highlight it · Click airport markers for details';
+      }
+    }
+
+    // ── Init ─────────────────────────────────────────────────────
+    document.addEventListener('DOMContentLoaded', () => {
+      populateSelects();
+      renderPopular();
+      updateMap();
+    });
+  </script>
+</body>
+
+</html>

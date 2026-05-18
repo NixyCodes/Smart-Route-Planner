@@ -1,0 +1,9 @@
+{
+  "name": "@workspace/skyroute-html",
+  "version": "1.0.0",
+  "scripts": {
+    "dev": "node server.js",
+    "start": "node server.js"
+  },
+  "dependencies": {}
+}

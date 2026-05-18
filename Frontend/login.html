@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Sign In – SkyRoute</title>
+  <link rel="stylesheet" href="css/style.css">
+  <style>
+    .float-plane:nth-child(1) { top:18%; left:8%;  animation-delay:0s;   animation-duration:3.5s; }
+    .float-plane:nth-child(2) { top:12%; left:78%; animation-delay:.6s;  animation-duration:4s; }
+    .float-plane:nth-child(3) { top:65%; left:12%; animation-delay:1.2s; animation-duration:4.5s; }
+    .float-plane:nth-child(4) { top:72%; left:75%; animation-delay:1.8s; animation-duration:3.8s; }
+    .float-plane:nth-child(5) { top:42%; left:50%; animation-delay:.4s;  animation-duration:5s; }
+  </style>
+</head>
+<body>
+  <script>
+    // Redirect if already logged in
+    try { if (JSON.parse(localStorage.getItem('skyroute_user'))) location.href='dashboard.html'; } catch(e){}
+  </script>
+
+  <div class="auth-page">
+    <!-- Left panel -->
+    <div class="auth-left">
+      <span class="float-plane">✈</span><span class="float-plane">✈</span>
+      <span class="float-plane">✈</span><span class="float-plane">✈</span>
+      <span class="float-plane">✈</span>
+      <div class="auth-left-content">
+        <div class="auth-left-icon">✈</div>
+        <h2 class="auth-left-title">Welcome Back</h2>
+        <p class="auth-left-sub">Log in to access your saved routes, travel preferences, and flight recommendations.</p>
+        <div class="auth-plane-orbit">✈</div>
+      </div>
+    </div>
+
+    <!-- Right form -->
+    <div class="auth-right">
+      <div class="auth-form-wrap">
+        <div class="auth-brand-mobile">
+          <div class="brand-icon">✈</div>
+          Sky<span class="text-primary">Route</span>
+        </div>
+
+        <h1 class="auth-title">Sign in to SkyRoute</h1>
+        <p class="auth-sub">Don't have an account? <a href="signup.html">Create one free</a></p>
+
+        <form class="auth-form" id="login-form" novalidate>
+          <div class="form-group">
+            <label class="form-label">Email address</label>
+            <div class="input-wrap">
+              <span class="input-icon">✉</span>
+              <input type="email" id="email" class="form-input has-icon" placeholder="you@example.com" autocomplete="email">
+            </div>
+            <span class="form-error" id="email-err">Please enter a valid email address.</span>
+          </div>
+
+          <div class="form-group">
+            <div class="label-row">
+              <label class="form-label">Password</label>
+              <span class="forgot-link" style="cursor:pointer">Forgot password?</span>
+            </div>
+            <div class="input-wrap">
+              <span class="input-icon">🔒</span>
+              <input type="password" id="password" class="form-input has-icon" placeholder="Enter your password" autocomplete="current-password" style="padding-right:42px">
+              <button type="button" class="pass-toggle" id="pass-toggle" title="Show/hide">👁</button>
+            </div>
+            <span class="form-error" id="pass-err">Password must be at least 6 characters.</span>
+          </div>
+
+          <div id="form-msg" style="display:none;padding:10px 14px;border-radius:var(--radius-sm);font-size:13px;font-weight:600"></div>
+
+          <button type="submit" class="btn btn-primary btn-full btn-lg" id="submit-btn">
+            Sign In →
+          </button>
+        </form>
+
+        <div class="auth-footer">
+          By signing in, you agree to our <a href="#">Terms</a> and <a href="#">Privacy Policy</a>.
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="js/data.js"></script>
+  <script src="js/dijkstra.js"></script>
+  <script src="js/main.js"></script>
+  <script>
+    // Theme init
+    document.addEventListener('DOMContentLoaded', () => applyTheme(getTheme()));
+
+    const form     = document.getElementById('login-form');
+    const emailEl  = document.getElementById('email');
+    const passEl   = document.getElementById('password');
+    const toggle   = document.getElementById('pass-toggle');
+    const submitBtn= document.getElementById('submit-btn');
+    const msg      = document.getElementById('form-msg');
+
+    toggle.addEventListener('click', () => {
+      const show = passEl.type === 'password';
+      passEl.type = show ? 'text' : 'password';
+      toggle.textContent = show ? '🙈' : '👁';
+    });
+
+    function showError(elId, show) {
+      const el = document.getElementById(elId);
+      if (show) el.classList.add('show'); else el.classList.remove('show');
+    }
+
+    form.addEventListener('submit', e => {
+      e.preventDefault();
+      let valid = true;
+      const email = emailEl.value.trim();
+      const pass  = passEl.value;
+
+      if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) { showError('email-err', true); valid = false; }
+      else showError('email-err', false);
+
+      if (pass.length < 6) { showError('pass-err', true); valid = false; }
+      else showError('pass-err', false);
+
+      if (!valid) return;
+
+      submitBtn.disabled = true;
+      submitBtn.innerHTML = '<span class="spinner"></span> Signing in…';
+
+      setTimeout(() => {
+        const namePart = email.split('@')[0];
+        const name = namePart.charAt(0).toUpperCase() + namePart.slice(1).replace(/[._-]/g,' ');
+        saveUser({ name, email });
+        window.location.href = 'dashboard.html';
+      }, 1200);
+    });
+  </script>
+</body>
+</html>
