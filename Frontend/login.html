@@ -1,145 +1,50 @@
 <!DOCTYPE html>
-<html lang="en" data-theme="light">
+<html lang="en" data-theme="dark">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Admin Login – SkyRoute</title>
   <link rel="stylesheet" href="css/style.css">
-  <style>
-    .auth-page {
-      min-height: 100vh;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      padding: 24px;
-      background: var(--bg);
-    }
-    .auth-card {
-      width: 100%;
-      max-width: 420px;
-      background: var(--card);
-      border: 1px solid var(--card-border);
-      border-radius: var(--radius-xl);
-      box-shadow: var(--shadow-lg);
-      padding: 36px 32px 32px;
-    }
-    .auth-header { text-align: center; margin-bottom: 28px; }
-    .auth-brand {
-      display: inline-flex;
-      align-items: center;
-      gap: 10px;
-      font-size: 22px;
-      font-weight: 800;
-      letter-spacing: -0.02em;
-      margin-bottom: 20px;
-    }
-    .admin-badge {
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
-      background: rgba(139,92,246,.12);
-      color: #8b5cf6;
-      border: 1px solid rgba(139,92,246,.25);
-      border-radius: var(--radius-full);
-      padding: 5px 14px;
-      font-size: 12px;
-      font-weight: 600;
-    }
-    .auth-title { font-size: 20px; font-weight: 700; margin: 16px 0 4px; }
-    .auth-sub   { font-size: 13px; color: var(--muted); }
-    .form-group { margin-bottom: 16px; }
-    .form-label {
-      display: block;
-      font-size: 13px;
-      font-weight: 600;
-      color: var(--text);
-      margin-bottom: 6px;
-    }
-    .form-input {
-      width: 100%;
-      padding: 10px 14px;
-      background: var(--input-bg);
-      border: 1px solid var(--border);
-      border-radius: var(--radius-sm);
-      font-size: 14px;
-      color: var(--text);
-      outline: none;
-      transition: border-color var(--transition), box-shadow var(--transition);
-    }
-    .form-input:focus {
-      border-color: #8b5cf6;
-      box-shadow: 0 0 0 3px rgba(139,92,246,.12);
-    }
-    .btn-admin {
-      width: 100%;
-      padding: 11px 20px;
-      background: linear-gradient(135deg, #8b5cf6, #7c3aed);
-      color: #fff;
-      border: none;
-      border-radius: var(--radius-sm);
-      font-size: 14px;
-      font-weight: 700;
-      cursor: pointer;
-      transition: opacity var(--transition), transform var(--transition);
-      margin-top: 8px;
-    }
-    .btn-admin:hover:not(:disabled) { opacity: .88; transform: translateY(-1px); }
-    .btn-admin:disabled { opacity: .55; cursor: not-allowed; transform: none; }
-    .auth-alert {
-      padding: 10px 14px;
-      border-radius: var(--radius-sm);
-      font-size: 13px;
-      font-weight: 500;
-      margin-bottom: 16px;
-      display: none;
-    }
-    .auth-alert.error   { background: rgba(239,68,68,.1); color: #ef4444; border: 1px solid rgba(239,68,68,.25); }
-    .auth-alert.success { background: rgba(16,185,129,.1); color: #10b981; border: 1px solid rgba(16,185,129,.25); }
-    .auth-footer { text-align: center; margin-top: 20px; font-size: 13px; color: var(--muted); }
-    .auth-footer a { color: var(--primary); font-weight: 600; text-decoration: none; }
-    .spinner-sm {
-      display: inline-block;
-      width: 14px; height: 14px;
-      border: 2px solid rgba(255,255,255,.35);
-      border-top-color: #fff;
-      border-radius: 50%;
-      animation: spin .6s linear infinite;
-      vertical-align: middle;
-      margin-right: 6px;
-    }
-    @keyframes spin { to { transform: rotate(360deg); } }
-  </style>
 </head>
 <body>
-  <div class="auth-page">
-    <div class="auth-card">
-      <div class="auth-header">
-        <div class="auth-brand">
-          <div class="brand-icon">✈</div>
-          Sky<span class="text-primary">Route</span>
+  <div class="login-page">
+    <div class="login-card">
+
+      <div class="login-brand">
+        <em>Sky</em><span>Route</span>
+      </div>
+      <div class="login-sub">
+        Admin Portal · Secure Access
+      </div>
+
+      <div class="login-msg" id="login-msg"></div>
+
+      <div class="form-group" style="margin-bottom:16px">
+        <label class="login-label">Username</label>
+        <input type="text" class="login-input" id="admin-username"
+          placeholder="admin" autocomplete="username">
+      </div>
+
+      <div class="form-group" style="margin-bottom:20px">
+        <label class="login-label">Password</label>
+        <div class="pass-wrap">
+          <input type="password" class="login-input" id="admin-password"
+            placeholder="••••••••" autocomplete="current-password" style="padding-right:44px">
+          <button class="pass-toggle" id="pass-toggle" type="button" onclick="togglePass()">👁</button>
         </div>
-        <div class="admin-badge">🛡 Admin Portal</div>
-        <div class="auth-title">Admin Login</div>
-        <div class="auth-sub">Sign in to manage flights and routes.</div>
       </div>
 
-      <div class="auth-alert" id="admin-alert"></div>
+      <div class="login-err" id="login-err"></div>
 
-      <div class="form-group">
-        <label class="form-label">Username</label>
-        <input type="text" class="form-input" id="admin-username" placeholder="admin" autocomplete="username">
-      </div>
-      <div class="form-group">
-        <label class="form-label">Password</label>
-        <input type="password" class="form-input" id="admin-password" placeholder="••••••••" autocomplete="current-password">
-      </div>
-
-      <button class="btn-admin" id="admin-login-btn" onclick="adminLogin()">
-        Sign In as Admin
+      <button class="login-btn" id="admin-login-btn" onclick="adminLogin()">
+        Sign In
       </button>
 
-      <div class="auth-footer">
-        <a href="index.html">← Back to SkyRoute</a>
+      <div style="text-align:center;margin-top:20px">
+        <a href="index.html" style="font-size:12px;color:var(--muted);transition:color var(--transition)"
+          onmouseover="this.style.color='var(--gold)'" onmouseout="this.style.color='var(--muted)'">
+          ← Back to SkyRoute
+        </a>
       </div>
     </div>
   </div>
@@ -147,19 +52,25 @@
   <script>
     const API = 'http://localhost:5000/api';
 
-    // Apply saved theme
-    document.documentElement.setAttribute('data-theme', localStorage.getItem('skyroute_theme') || 'light');
+    document.documentElement.setAttribute('data-theme', 'dark');
 
-    // Already logged in
     if (localStorage.getItem('skyroute_admin_token')) {
       window.location.href = 'admin.html';
     }
 
-    function showAlert(type, msg) {
-      const el = document.getElementById('admin-alert');
-      el.className = `auth-alert ${type}`;
+    function showMsg(type, msg) {
+      const el = document.getElementById('login-msg');
+      el.className = `login-msg ${type}`;
       el.textContent = msg;
-      el.style.display = 'block';
+    }
+
+    function showErr(msg) {
+      document.getElementById('login-err').textContent = msg;
+    }
+
+    function togglePass() {
+      const inp = document.getElementById('admin-password');
+      inp.type  = inp.type === 'password' ? 'text' : 'password';
     }
 
     async function adminLogin() {
@@ -167,15 +78,16 @@
       const username = document.getElementById('admin-username').value.trim();
       const password = document.getElementById('admin-password').value;
 
-      document.getElementById('admin-alert').style.display = 'none';
+      document.getElementById('login-err').textContent = '';
+      document.getElementById('login-msg').className   = 'login-msg';
 
       if (!username || !password) {
-        showAlert('error', 'Please enter username and password.');
+        showErr('Please enter username and password.');
         return;
       }
 
-      btn.disabled = true;
-      btn.innerHTML = '<span class="spinner-sm"></span> Signing in…';
+      btn.disabled  = true;
+      btn.innerHTML = '<span class="spinner"></span>';
 
       try {
         const res  = await fetch(`${API}/admin/auth/login`, {
@@ -186,25 +98,23 @@
         const data = await res.json();
 
         if (!res.ok) {
-          showAlert('error', data.error || 'Invalid credentials.');
+          showErr(data.error || 'Invalid credentials.');
           return;
         }
 
         localStorage.setItem('skyroute_admin_token', data.token);
         localStorage.setItem('skyroute_admin_user',  JSON.stringify(data.admin));
-        showAlert('success', 'Login successful! Redirecting…');
+        showMsg('success', 'Access granted. Redirecting…');
         setTimeout(() => { window.location.href = 'admin.html'; }, 700);
       } catch {
-        showAlert('error', 'Could not reach backend. Make sure the server is running on port 5000.');
+        showErr('Could not reach backend. Make sure the server is running on port 5000.');
       } finally {
-        btn.disabled = false;
-        btn.innerHTML = 'Sign In as Admin';
+        btn.disabled  = false;
+        btn.innerHTML = 'Sign In';
       }
     }
 
-    document.addEventListener('keydown', e => {
-      if (e.key === 'Enter') adminLogin();
-    });
+    document.addEventListener('keydown', e => { if (e.key === 'Enter') adminLogin(); });
   </script>
 </body>
 </html>
