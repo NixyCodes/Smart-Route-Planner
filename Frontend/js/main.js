@@ -9,41 +9,29 @@ let REGIONS     = [];
 
 // ── Navbar ─────────────────────────────────────────────────────
 function buildNavbar(activePage) {
-    const isAdmin = !!localStorage.getItem('skyroute_admin_token');
-
     const pages = [
         { href: 'index.html',     label: 'Home' },
         { href: 'dashboard.html', label: 'Route Planner' },
-        isAdmin
-            ? { href: 'admin.html', label: '🛡 Admin' }
-            : { href: 'login.html', label: 'Admin' },
+        { href: 'admin.html',     label: 'Admin' },
     ];
 
     const links = pages.map(p =>
         `<a href="${p.href}" class="nav-link${activePage === p.href ? ' active' : ''}">${p.label}</a>`
     ).join('');
 
-    const adminBtn = isAdmin
-        ? `<button class="nav-signin" style="border-color:rgba(239,68,68,.3);color:#EF4444" onclick="adminLogout()">Sign out</button>`
-        : '';
-
     return `
     <nav class="navbar" id="navbar">
-      <div class="container" style="display:flex;align-items:center;justify-content:space-between;height:72px">
-        <a href="index.html" class="nav-brand">
-          <em>Sky</em><span class="text-gold">Route</span>
-        </a>
-        <div class="nav-links" id="nav-links">${links}</div>
-        <div class="nav-right">
-          ${adminBtn}
-          <button class="mobile-toggle" onclick="toggleMobileMenu()" id="mobile-toggle">☰</button>
-        </div>
+      <a href="index.html" class="nav-brand">
+        <em>Sky</em><span class="text-gold">Route</span>
+      </a>
+      <div class="nav-links" id="nav-links">${links}</div>
+      <div class="nav-right">
+        <button class="mobile-toggle" onclick="toggleMobileMenu()" id="mobile-toggle">☰</button>
       </div>
       <div class="mobile-menu" id="mobile-menu">
         ${pages.map(p =>
             `<a href="${p.href}" class="mobile-link${activePage === p.href ? ' active' : ''}">${p.label}</a>`
         ).join('')}
-        ${isAdmin ? `<button class="mobile-link danger" onclick="adminLogout()" style="background:none;border:none;text-align:left;width:100%;cursor:pointer;font-size:inherit;padding:15px 0;border-bottom:1px solid var(--border)">Sign out</button>` : ''}
       </div>
     </nav>`;
 }
@@ -237,6 +225,8 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     const nav = document.getElementById('navbar');
     if (nav) {
+        const activePage = window._activePage || 'index.html';
+        if (activePage !== 'index.html') nav.classList.add('scrolled');
         window.addEventListener('scroll', () => nav.classList.toggle('scrolled', window.scrollY > 20), { passive: true });
     }
 
