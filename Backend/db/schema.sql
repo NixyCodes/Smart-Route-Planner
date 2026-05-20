@@ -1,5 +1,5 @@
 -- ============================================================
---  SkyRoute – SQL Schema
+--  SkyRoute – SQL Schema (v2 – multi-constraint optimizer)
 --  Normalized to 3NF. Run via: node db/seed.js
 -- ============================================================
 
@@ -8,24 +8,32 @@ PRAGMA foreign_keys = ON;
 -- ── Core reference tables ────────────────────────────────────
 
 CREATE TABLE IF NOT EXISTS airports (
-  iata_code    TEXT PRIMARY KEY,
-  city_name    TEXT NOT NULL,
-  airport_name TEXT NOT NULL,
-  latitude     REAL NOT NULL,
-  longitude    REAL NOT NULL,
-  airport_type TEXT NOT NULL CHECK(airport_type IN ('hub','international','national')),
-  country      TEXT NOT NULL,
-  region       TEXT NOT NULL
+  iata_code        TEXT PRIMARY KEY,
+  city_name        TEXT NOT NULL,
+  airport_name     TEXT NOT NULL,
+  latitude         REAL NOT NULL,
+  longitude        REAL NOT NULL,
+  airport_type     TEXT NOT NULL CHECK(airport_type IN ('hub','international','national')),
+  country          TEXT NOT NULL,
+  region           TEXT NOT NULL,
+  congestion_score REAL NOT NULL DEFAULT 0.5
+    CHECK(congestion_score >= 0 AND congestion_score <= 1)
 );
 
 CREATE TABLE IF NOT EXISTS airlines (
-  iata_code    TEXT PRIMARY KEY,
-  airline_name TEXT NOT NULL
+  iata_code         TEXT PRIMARY KEY,
+  airline_name      TEXT NOT NULL,
+  airline_rating    REAL NOT NULL DEFAULT 3.5
+    CHECK(airline_rating >= 1.0 AND airline_rating <= 5.0),
+  delay_probability REAL NOT NULL DEFAULT 0.20
+    CHECK(delay_probability >= 0 AND delay_probability <= 1)
 );
 
 CREATE TABLE IF NOT EXISTS aircraft (
-  model_code   TEXT PRIMARY KEY,
-  model_name   TEXT NOT NULL
+  model_code       TEXT PRIMARY KEY,
+  model_name       TEXT NOT NULL,
+  emissions_factor REAL NOT NULL DEFAULT 7.0
+    -- kg CO2 per passenger per 100 km (approximate)
 );
 
 -- ── Flight segments ──────────────────────────────────────────
@@ -48,16 +56,18 @@ CREATE TABLE IF NOT EXISTS flight_segments (
 -- ── Computed / cached optimal routes ────────────────────────
 
 CREATE TABLE IF NOT EXISTS optimized_routes (
-  route_id          INTEGER PRIMARY KEY AUTOINCREMENT,
-  origin_code       TEXT NOT NULL,
-  destination_code  TEXT NOT NULL,
-  optimization_type TEXT NOT NULL CHECK(optimization_type IN ('distance','time','cost')),
-  path_codes        TEXT NOT NULL,   -- comma-separated IATA codes
-  total_distance_km INTEGER NOT NULL,
+  route_id           INTEGER PRIMARY KEY AUTOINCREMENT,
+  origin_code        TEXT NOT NULL,
+  destination_code   TEXT NOT NULL,
+  optimization_type  TEXT NOT NULL
+    CHECK(optimization_type IN ('cheapest','fastest','smart','min_layover')),
+  path_codes         TEXT NOT NULL,   -- comma-separated IATA codes
+  total_distance_km  INTEGER NOT NULL,
   total_duration_min INTEGER NOT NULL,
-  total_cost_usd    INTEGER NOT NULL,
-  segment_count     INTEGER NOT NULL,
-  computed_at       DATETIME DEFAULT CURRENT_TIMESTAMP,
+  total_cost_usd     INTEGER NOT NULL,
+  total_layover_min  INTEGER NOT NULL DEFAULT 0,
+  segment_count      INTEGER NOT NULL,
+  computed_at        DATETIME DEFAULT CURRENT_TIMESTAMP,
   FOREIGN KEY (origin_code)      REFERENCES airports(iata_code),
   FOREIGN KEY (destination_code) REFERENCES airports(iata_code),
   UNIQUE(origin_code, destination_code, optimization_type)

@@ -3,70 +3,89 @@
 
 const { getDb } = require('./database');
 
+// [iata_code, city_name, airport_name, lat, lng, type, country, region, congestion_score]
 const AIRPORTS = [
-    ["JFK","New York","John F. Kennedy International",40.6413,-73.7781,"hub","USA","North America"],
-    ["LAX","Los Angeles","Los Angeles International",33.9416,-118.4085,"hub","USA","North America"],
-    ["ORD","Chicago","O'Hare International",41.9742,-87.9073,"hub","USA","North America"],
-    ["ATL","Atlanta","Hartsfield-Jackson Atlanta International",33.6407,-84.4277,"hub","USA","North America"],
-    ["DFW","Dallas","Dallas/Fort Worth International",32.8998,-97.0403,"hub","USA","North America"],
-    ["SFO","San Francisco","San Francisco International",37.6213,-122.3790,"national","USA","North America"],
-    ["MIA","Miami","Miami International Airport",25.7959,-80.2870,"national","USA","North America"],
-    ["BOS","Boston","Logan International Airport",42.3656,-71.0096,"national","USA","North America"],
-    ["DEN","Denver","Denver International Airport",39.8561,-104.6737,"national","USA","North America"],
-    ["SEA","Seattle","Seattle-Tacoma International",47.4502,-122.3088,"national","USA","North America"],
-    ["YYZ","Toronto","Pearson International Airport",43.6777,-79.6248,"international","Canada","North America"],
-    ["YVR","Vancouver","Vancouver International Airport",49.1947,-123.1792,"national","Canada","North America"],
-    ["YUL","Montreal","Montréal-Trudeau International",45.4706,-73.7408,"national","Canada","North America"],
-    ["MEX","Mexico City","Benito Juárez International",19.4363,-99.0721,"international","Mexico","North America"],
-    ["GRU","São Paulo","Guarulhos International Airport",-23.4356,-46.4731,"hub","Brazil","South America"],
-    ["LHR","London","Heathrow Airport",51.4700,-0.4543,"hub","UK","Europe"],
-    ["EDI","Edinburgh","Edinburgh Airport",55.9500,-3.3725,"national","UK","Europe"],
-    ["MAN","Manchester","Manchester Airport",53.3537,-2.2750,"national","UK","Europe"],
-    ["CDG","Paris","Charles de Gaulle Airport",49.0097,2.5479,"hub","France","Europe"],
-    ["FRA","Frankfurt","Frankfurt Airport",50.0379,8.5622,"hub","Germany","Europe"],
-    ["AMS","Amsterdam","Amsterdam Airport Schiphol",52.3086,4.7639,"international","Netherlands","Europe"],
-    ["MAD","Madrid","Adolfo Suárez Madrid-Barajas",40.4983,-3.5676,"international","Spain","Europe"],
-    ["FCO","Rome","Leonardo da Vinci International",41.8045,12.2508,"international","Italy","Europe"],
-    ["IST","Istanbul","Istanbul Airport",41.2608,28.7418,"hub","Turkey","Europe"],
-    ["MUC","Munich","Munich Airport",48.3538,11.7861,"national","Germany","Europe"],
-    ["BER","Berlin","Berlin Brandenburg Airport",52.3667,13.5033,"national","Germany","Europe"],
-    ["DXB","Dubai","Dubai International Airport",25.2532,55.3657,"hub","UAE","Middle East"],
-    ["DOH","Doha","Hamad International Airport",25.2731,51.6080,"hub","Qatar","Middle East"],
-    ["JNB","Johannesburg","O.R. Tambo International",-26.1392,28.2460,"international","South Africa","Africa"],
-    ["NRT","Tokyo","Narita International Airport",35.7720,140.3929,"hub","Japan","Asia"],
-    ["ICN","Seoul","Incheon International Airport",37.4602,126.4407,"hub","South Korea","Asia"],
-    ["HKG","Hong Kong","Hong Kong International Airport",22.3080,113.9185,"hub","China SAR","Asia"],
-    ["PEK","Beijing","Capital International Airport",40.0799,116.6031,"hub","China","Asia"],
-    ["SIN","Singapore","Changi Airport",1.3644,103.9915,"hub","Singapore","Asia"],
-    ["BKK","Bangkok","Suvarnabhumi Airport",13.6900,100.7501,"hub","Thailand","Asia"],
-    ["KUL","Kuala Lumpur","Kuala Lumpur International",2.7456,101.7099,"international","Malaysia","Asia"],
-    ["CGK","Jakarta","Soekarno-Hatta International",-6.1275,106.6537,"international","Indonesia","Asia"],
-    ["BOM","Mumbai","Chhatrapati Shivaji Maharaj International",19.0896,72.8656,"hub","India","Asia"],
-    ["DEL","Delhi","Indira Gandhi International Airport",28.5665,77.1031,"hub","India","Asia"],
-    ["BLR","Bangalore","Kempegowda International Airport",13.1979,77.7063,"national","India","Asia"],
-    ["HYD","Hyderabad","Rajiv Gandhi International Airport",17.2403,78.4294,"national","India","Asia"],
-    ["MAA","Chennai","Chennai International Airport",12.9941,80.1709,"national","India","Asia"],
-    ["CCU","Kolkata","Netaji Subhas Chandra Bose International",22.6547,88.4467,"national","India","Asia"],
-    ["SYD","Sydney","Kingsford Smith Airport",-33.9399,151.1753,"hub","Australia","Oceania"],
-    ["MEL","Melbourne","Melbourne Airport (Tullamarine)",-37.6690,144.8410,"national","Australia","Oceania"],
-    ["BNE","Brisbane","Brisbane Airport",-27.3842,153.1175,"national","Australia","Oceania"],
-    ["PER","Perth","Perth Airport",-31.9403,115.9674,"national","Australia","Oceania"],
+    ["JFK","New York","John F. Kennedy International",40.6413,-73.7781,"hub","USA","North America",0.82],
+    ["LAX","Los Angeles","Los Angeles International",33.9416,-118.4085,"hub","USA","North America",0.90],
+    ["ORD","Chicago","O'Hare International",41.9742,-87.9073,"hub","USA","North America",0.88],
+    ["ATL","Atlanta","Hartsfield-Jackson Atlanta International",33.6407,-84.4277,"hub","USA","North America",0.95],
+    ["DFW","Dallas","Dallas/Fort Worth International",32.8998,-97.0403,"hub","USA","North America",0.82],
+    ["SFO","San Francisco","San Francisco International",37.6213,-122.3790,"national","USA","North America",0.78],
+    ["MIA","Miami","Miami International Airport",25.7959,-80.2870,"national","USA","North America",0.72],
+    ["BOS","Boston","Logan International Airport",42.3656,-71.0096,"national","USA","North America",0.65],
+    ["DEN","Denver","Denver International Airport",39.8561,-104.6737,"national","USA","North America",0.65],
+    ["SEA","Seattle","Seattle-Tacoma International",47.4502,-122.3088,"national","USA","North America",0.60],
+    ["YYZ","Toronto","Pearson International Airport",43.6777,-79.6248,"international","Canada","North America",0.68],
+    ["YVR","Vancouver","Vancouver International Airport",49.1947,-123.1792,"national","Canada","North America",0.58],
+    ["YUL","Montreal","Montréal-Trudeau International",45.4706,-73.7408,"national","Canada","North America",0.55],
+    ["MEX","Mexico City","Benito Juárez International",19.4363,-99.0721,"international","Mexico","North America",0.70],
+    ["GRU","São Paulo","Guarulhos International Airport",-23.4356,-46.4731,"hub","Brazil","South America",0.65],
+    ["LHR","London","Heathrow Airport",51.4700,-0.4543,"hub","UK","Europe",0.92],
+    ["EDI","Edinburgh","Edinburgh Airport",55.9500,-3.3725,"national","UK","Europe",0.45],
+    ["MAN","Manchester","Manchester Airport",53.3537,-2.2750,"national","UK","Europe",0.60],
+    ["CDG","Paris","Charles de Gaulle Airport",49.0097,2.5479,"hub","France","Europe",0.80],
+    ["FRA","Frankfurt","Frankfurt Airport",50.0379,8.5622,"hub","Germany","Europe",0.82],
+    ["AMS","Amsterdam","Amsterdam Airport Schiphol",52.3086,4.7639,"international","Netherlands","Europe",0.78],
+    ["MAD","Madrid","Adolfo Suárez Madrid-Barajas",40.4983,-3.5676,"international","Spain","Europe",0.72],
+    ["FCO","Rome","Leonardo da Vinci International",41.8045,12.2508,"international","Italy","Europe",0.70],
+    ["IST","Istanbul","Istanbul Airport",41.2608,28.7418,"hub","Turkey","Europe",0.78],
+    ["MUC","Munich","Munich Airport",48.3538,11.7861,"national","Germany","Europe",0.72],
+    ["BER","Berlin","Berlin Brandenburg Airport",52.3667,13.5033,"national","Germany","Europe",0.62],
+    ["DXB","Dubai","Dubai International Airport",25.2532,55.3657,"hub","UAE","Middle East",0.88],
+    ["DOH","Doha","Hamad International Airport",25.2731,51.6080,"hub","Qatar","Middle East",0.65],
+    ["JNB","Johannesburg","O.R. Tambo International",-26.1392,28.2460,"international","South Africa","Africa",0.62],
+    ["NRT","Tokyo","Narita International Airport",35.7720,140.3929,"hub","Japan","Asia",0.78],
+    ["ICN","Seoul","Incheon International Airport",37.4602,126.4407,"hub","South Korea","Asia",0.72],
+    ["HKG","Hong Kong","Hong Kong International Airport",22.3080,113.9185,"hub","China SAR","Asia",0.80],
+    ["PEK","Beijing","Capital International Airport",40.0799,116.6031,"hub","China","Asia",0.85],
+    ["SIN","Singapore","Changi Airport",1.3644,103.9915,"hub","Singapore","Asia",0.75],
+    ["BKK","Bangkok","Suvarnabhumi Airport",13.6900,100.7501,"hub","Thailand","Asia",0.75],
+    ["KUL","Kuala Lumpur","Kuala Lumpur International",2.7456,101.7099,"international","Malaysia","Asia",0.68],
+    ["CGK","Jakarta","Soekarno-Hatta International",-6.1275,106.6537,"international","Indonesia","Asia",0.70],
+    ["BOM","Mumbai","Chhatrapati Shivaji Maharaj International",19.0896,72.8656,"hub","India","Asia",0.82],
+    ["DEL","Delhi","Indira Gandhi International Airport",28.5665,77.1031,"hub","India","Asia",0.80],
+    ["BLR","Bangalore","Kempegowda International Airport",13.1979,77.7063,"national","India","Asia",0.68],
+    ["HYD","Hyderabad","Rajiv Gandhi International Airport",17.2403,78.4294,"national","India","Asia",0.60],
+    ["MAA","Chennai","Chennai International Airport",12.9941,80.1709,"national","India","Asia",0.62],
+    ["CCU","Kolkata","Netaji Subhas Chandra Bose International",22.6547,88.4467,"national","India","Asia",0.58],
+    ["SYD","Sydney","Kingsford Smith Airport",-33.9399,151.1753,"hub","Australia","Oceania",0.68],
+    ["MEL","Melbourne","Melbourne Airport (Tullamarine)",-37.6690,144.8410,"national","Australia","Oceania",0.58],
+    ["BNE","Brisbane","Brisbane Airport",-27.3842,153.1175,"national","Australia","Oceania",0.50],
+    ["PER","Perth","Perth Airport",-31.9403,115.9674,"national","Australia","Oceania",0.45],
 ];
 
+// [iata_code, airline_name, airline_rating (1-5), delay_probability (0-1)]
 const AIRLINES = [
-    ["EK","Emirates"],["DL","Delta Air Lines"],["UA","United Airlines"],
-    ["AA","American Airlines"],["BA","British Airways"],["AF","Air France"],
-    ["LH","Lufthansa"],["SQ","Singapore Airlines"],["QF","Qantas Airways"],
-    ["QR","Qatar Airways"],["CX","Cathay Pacific"],["TK","Turkish Airlines"],
-    ["AI","Air India"],["6E","IndiGo"],["AK","AirAsia"],
-    ["AC","Air Canada"],["VA","Virgin Australia"],["CA","Air China"],
+    ["EK","Emirates",4.6,0.10],
+    ["DL","Delta Air Lines",3.8,0.20],
+    ["UA","United Airlines",3.7,0.22],
+    ["AA","American Airlines",3.6,0.23],
+    ["BA","British Airways",4.2,0.17],
+    ["AF","Air France",4.3,0.18],
+    ["LH","Lufthansa",4.3,0.15],
+    ["SQ","Singapore Airlines",5.0,0.08],
+    ["QF","Qantas Airways",4.8,0.09],
+    ["QR","Qatar Airways",4.8,0.07],
+    ["CX","Cathay Pacific",4.7,0.10],
+    ["TK","Turkish Airlines",3.9,0.22],
+    ["AI","Air India",3.2,0.30],
+    ["6E","IndiGo",2.5,0.28],
+    ["AK","AirAsia",2.8,0.25],
+    ["AC","Air Canada",4.0,0.16],
+    ["VA","Virgin Australia",3.5,0.14],
+    ["CA","Air China",3.5,0.25],
 ];
 
+// [model_code, model_name, emissions_factor (kg CO2 per passenger per 100km)]
 const AIRCRAFT = [
-    ["B777","Boeing 777-300ER"],["B787","Boeing 787-9 Dreamliner"],
-    ["A380","Airbus A380-800"],["A350","Airbus A350-900"],
-    ["B747","Boeing 747-400"],["A320","Airbus A320neo"],
-    ["B737","Boeing 737-800"],["A321","Airbus A321neo"],
+    ["B777","Boeing 777-300ER",7.8],
+    ["B787","Boeing 787-9 Dreamliner",6.1],
+    ["A380","Airbus A380-800",8.2],
+    ["A350","Airbus A350-900",6.3],
+    ["B747","Boeing 747-400",9.1],
+    ["A320","Airbus A320neo",6.0],
+    ["B737","Boeing 737-800",6.2],
+    ["A321","Airbus A321neo",5.8],
 ];
 
 // [id, from, to, dist_km, duration_min, cost_usd, airline, aircraft]
@@ -209,22 +228,22 @@ function seed() {
     const db = getDb();
 
     const insertAirport = db.prepare(
-        'INSERT OR REPLACE INTO airports (iata_code,city_name,airport_name,latitude,longitude,airport_type,country,region) VALUES (?,?,?,?,?,?,?,?)'
+        'INSERT OR REPLACE INTO airports (iata_code,city_name,airport_name,latitude,longitude,airport_type,country,region,congestion_score) VALUES (?,?,?,?,?,?,?,?,?)'
     );
     const insertAirline = db.prepare(
-        'INSERT OR REPLACE INTO airlines (iata_code,airline_name) VALUES (?,?)'
+        'INSERT OR REPLACE INTO airlines (iata_code,airline_name,airline_rating,delay_probability) VALUES (?,?,?,?)'
     );
     const insertAircraft = db.prepare(
-        'INSERT OR REPLACE INTO aircraft (model_code,model_name) VALUES (?,?)'
+        'INSERT OR REPLACE INTO aircraft (model_code,model_name,emissions_factor) VALUES (?,?,?)'
     );
     const insertSegment = db.prepare(
         'INSERT OR REPLACE INTO flight_segments (segment_id,origin_code,destination_code,distance_km,duration_min,base_cost_usd,airline_code,aircraft_code) VALUES (?,?,?,?,?,?,?,?)'
     );
 
     const runAll = db.transaction(() => {
-        for (const a of AIRPORTS)    insertAirport.run(...a);
-        for (const a of AIRLINES)    insertAirline.run(...a);
-        for (const a of AIRCRAFT)    insertAircraft.run(...a);
+        for (const a of AIRPORTS)     insertAirport.run(...a);
+        for (const a of AIRLINES)     insertAirline.run(...a);
+        for (const a of AIRCRAFT)     insertAircraft.run(...a);
         for (const s of RAW_SEGMENTS) insertSegment.run(...s);
     });
 
@@ -238,10 +257,10 @@ function seed() {
     };
 
     console.log('Database seeded successfully:');
-    console.log(`  airports: ${counts.airports}`);
-    console.log(`  airlines: ${counts.airlines}`);
-    console.log(`  aircraft: ${counts.aircraft}`);
-    console.log(`  flight segments: ${counts.segments}`);
+    console.log(`  airports : ${counts.airports}`);
+    console.log(`  airlines : ${counts.airlines}`);
+    console.log(`  aircraft : ${counts.aircraft}`);
+    console.log(`  segments : ${counts.segments}`);
 }
 
 seed();

@@ -274,13 +274,17 @@ main { flex: 1; }
 .swap-btn:hover { border-color: var(--primary); color: var(--primary); background: var(--primary-10); transform: rotate(180deg); }
 
 .optimize-label { font-size: 11px; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: 0.07em; margin-bottom: 10px; }
-.optimize-grid  { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-bottom: 20px; }
-.opt-btn { display: flex; flex-direction: column; align-items: center; gap: 4px; padding: 13px 8px; border-radius: var(--radius); border: 1.5px solid var(--border); background: var(--bg); color: var(--muted); font-size: 12px; font-weight: 600; cursor: pointer; transition: all var(--transition); font-family: inherit; line-height: 1.3; text-align: center; }
-.opt-btn:hover  { border-color: var(--primary); color: var(--primary); background: var(--primary-10); }
-.opt-btn.active { border-color: var(--primary); color: var(--primary); background: var(--primary-10); }
+.optimize-grid  { display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; margin-bottom: 16px; }
+.opt-btn { display: flex; flex-direction: column; align-items: center; gap: 4px; padding: 12px 8px; border-radius: var(--radius); border: 1.5px solid var(--border); background: var(--bg); color: var(--muted); font-size: 12px; font-weight: 600; cursor: pointer; transition: all var(--transition); font-family: inherit; line-height: 1.3; text-align: center; }
+.opt-btn:hover { border-color: var(--primary); color: var(--primary); background: var(--primary-10); }
+/* Per-mode active colours */
+.opt-btn[data-opt="cheapest"].active    { border-color: var(--success); color: var(--success); background: rgba(16,185,129,.1); }
+.opt-btn[data-opt="fastest"].active     { border-color: var(--primary); color: var(--primary); background: var(--primary-10); }
+.opt-btn[data-opt="smart"].active       { border-color: var(--purple);  color: var(--purple);  background: rgba(139,92,246,.1); }
+.opt-btn[data-opt="min_layover"].active { border-color: var(--orange);  color: var(--orange);  background: rgba(249,115,22,.1); }
 .opt-btn-icon { font-size: 19px; }
 .opt-btn-desc { font-size: 10px; font-weight: 400; color: var(--subtle); }
-.opt-btn.active .opt-btn-desc { color: var(--primary); opacity: .7; }
+.opt-btn.active .opt-btn-desc { opacity: .75; }
 
 /* Popular routes */
 .popular-label  { font-size: 11px; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: 0.07em; margin-bottom: 10px; margin-top: 18px; }
@@ -303,6 +307,7 @@ main { flex: 1; }
 
 /* Summary stat cards */
 .stat-cards { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-bottom: 16px; }
+.result-stat-cards { grid-template-columns: repeat(3, 1fr); }
 .stat-card  { background: var(--card); border: 1px solid var(--card-border); border-radius: var(--radius-lg); padding: 18px 14px; text-align: center; box-shadow: var(--shadow-xs); }
 .stat-card:nth-child(1) { border-top: 3px solid var(--primary); }
 .stat-card:nth-child(2) { border-top: 3px solid var(--success); }
@@ -380,3 +385,56 @@ main { flex: 1; }
 /* ── Leaflet popup override ───────────────────────────────────── */
 .skyroute-popup .leaflet-popup-content-wrapper { border-radius: 12px; box-shadow: var(--shadow-lg); border: 1px solid var(--card-border); }
 .skyroute-popup .leaflet-popup-content { margin: 12px 14px; }
+
+/* ── Enriched segment display ─────────────────────────────────── */
+.rating-inline { font-size: 10px; letter-spacing: 0.5px; color: #f59e0b; }
+.delay-inline  { font-size: 11px; color: var(--muted); }
+.meta-dot      { color: var(--subtle); margin: 0 2px; }
+
+/* Layover indicator between flight legs */
+.layover-row   { display: flex; align-items: center; gap: 10px; margin: 8px 0 8px 14px; }
+.layover-line  { flex: 1; height: 1px; background: var(--border); }
+.layover-tag   { font-size: 11px; color: var(--warn); font-weight: 600; white-space: nowrap; background: rgba(245,158,11,.08); border: 1px solid rgba(245,158,11,.25); padding: 3px 10px; border-radius: var(--radius-sm); }
+
+/* 6-column result stat cards */
+@media (min-width: 600px) {
+  .result-stat-cards { grid-template-columns: repeat(3, 1fr); }
+}
+
+/* ── Comparison panel ─────────────────────────────────────────── */
+.compare-section  { background: var(--card); border: 1px solid var(--card-border); border-radius: var(--radius-xl); padding: 20px; box-shadow: var(--shadow-sm); margin-top: 20px; }
+.compare-header   { display: flex; flex-direction: column; gap: 4px; margin-bottom: 16px; }
+.compare-title    { font-size: 15px; font-weight: 700; }
+.compare-grid     { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+
+.compare-card { border-radius: var(--radius-lg); border: 1.5px solid var(--border); overflow: hidden; cursor: pointer; transition: box-shadow var(--transition-md), transform var(--transition-md); }
+.compare-card:hover { box-shadow: var(--shadow); transform: translateY(-2px); }
+
+.compare-card-hd { padding: 10px 14px; color: #fff; font-size: 13px; font-weight: 700; display: flex; align-items: center; gap: 6px; }
+
+.compare-card-body { padding: 14px; }
+
+.compare-route-path { font-size: 11px; font-weight: 600; color: var(--muted); margin-bottom: 12px; word-break: break-all; line-height: 1.5; }
+
+.compare-metrics { display: flex; flex-direction: column; gap: 7px; margin-bottom: 14px; }
+
+.metric-row   { display: flex; justify-content: space-between; align-items: center; font-size: 12px; }
+.metric-lbl   { color: var(--muted); }
+.metric-val   { font-weight: 600; display: flex; align-items: center; gap: 4px; }
+.metric-winner { color: var(--success); }
+
+.winner-badge  { font-size: 12px; line-height: 1; }
+
+.compare-view-btn { display: block; width: 100%; padding: 8px; border-radius: var(--radius-sm); border: 1.5px solid; background: transparent; font-size: 12px; font-weight: 600; cursor: pointer; font-family: inherit; text-align: center; transition: all var(--transition); }
+.compare-view-btn:hover { opacity: .8; }
+
+/* Comparison border accents */
+.compare-cheapest    { border-color: #10b981; }
+.compare-fastest     { border-color: #0ea5e9; }
+.compare-smart       { border-color: #8b5cf6; }
+.compare-min_layover { border-color: #f97316; }
+
+@media (max-width: 640px) {
+  .compare-grid { grid-template-columns: 1fr; }
+  .result-stat-cards { grid-template-columns: 1fr 1fr; }
+}

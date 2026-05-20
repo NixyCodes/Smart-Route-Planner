@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin - SkyRoute</title>
+  <link rel="stylesheet" href="css/style.css">
+  <style>
+    .admin-container {
+      padding: 40px;
+    }
+    .admin-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px;
+    }
+    .admin-table {
+      width: 100%;
+      border-collapse: collapse;
+      background: var(--card-bg);
+      border-radius: 8px;
+      overflow: hidden;
+      box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1);
+    }
+    .admin-table th, .admin-table td {
+      padding: 12px 15px;
+      text-align: left;
+      border-bottom: 1px solid var(--border-light);
+    }
+    .admin-table th {
+      background: var(--bg);
+      font-weight: 600;
+      color: var(--muted);
+    }
+    .action-btn {
+      padding: 4px 8px;
+      margin: 0 2px;
+      border-radius: 4px;
+      cursor: pointer;
+      border: 1px solid transparent;
+      font-size: 12px;
+    }
+    .edit-btn { background: #0ea5e9; color: white; }
+    .del-btn { background: #ef4444; color: white; }
+    
+    /* Modal styles */
+    .modal {
+      display: none;
+      position: fixed;
+      top: 0; left: 0; width: 100%; height: 100%;
+      background: rgba(0,0,0,0.5);
+      align-items: center; justify-content: center;
+      z-index: 1000;
+    }
+    .modal-content {
+      background: var(--card-bg);
+      padding: 24px;
+      border-radius: 8px;
+      width: 100%;
+      max-width: 500px;
+      color: var(--fg);
+    }
+    .modal-header {
+      font-size: 18px; font-weight: bold; margin-bottom: 16px;
+    }
+    .modal .form-group {
+      margin-bottom: 12px;
+    }
+    .modal .form-control {
+      width: 100%; padding: 8px; border: 1px solid var(--border-light);
+      border-radius: 4px; background: var(--bg); color: var(--fg);
+    }
+    .modal-footer {
+      display: flex; justify-content: flex-end; gap: 10px; margin-top: 20px;
+    }
+  </style>
+</head>
+<body class="page-wrapper">
+  <script>window._activePage = 'admin.html';</script>
+
+  <div id="navbar-container"></div>
+
+  <main>
+    <div class="container admin-container">
+      <div class="admin-header">
+        <h1>Flight Operations (Admin)</h1>
+        <div>
+          <input type="text" id="search-input" placeholder="Search by Segment ID or Code..." class="form-control" style="width:250px; display:inline-block; margin-right:10px; padding: 8px;">
+          <button class="btn btn-primary" onclick="openModal()">+ Add Flight</button>
+        </div>
+      </div>
+
+      <table class="admin-table" id="flights-table">
+        <thead>
+          <tr>
+            <th>Segment ID</th>
+            <th>Origin</th>
+            <th>Destination</th>
+            <th>Dist (km)</th>
+            <th>Time (min)</th>
+            <th>Cost ($)</th>
+            <th>Airline</th>
+            <th>Aircraft</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody id="flights-body">
+          <!-- Populated by JS -->
+        </tbody>
+      </table>
+    </div>
+  </main>
+
+  <div id="footer-container"></div>
+
+  <!-- Modal -->
+  <div class="modal" id="flight-modal">
+    <div class="modal-content">
+      <div class="modal-header" id="modal-title">Add/Edit Flight</div>
+      <form id="flight-form">
+        <div class="form-group">
+          <label>Segment ID (e.g. FS999)</label>
+          <input type="text" id="segment_id" class="form-control" required>
+        </div>
+        <div style="display:flex; gap:10px;">
+          <div class="form-group" style="flex:1">
+            <label>Origin Code (e.g. JFK)</label>
+            <input type="text" id="origin_code" class="form-control" required>
+          </div>
+          <div class="form-group" style="flex:1">
+            <label>Destination Code (e.g. LHR)</label>
+            <input type="text" id="destination_code" class="form-control" required>
+          </div>
+        </div>
+        <div style="display:flex; gap:10px;">
+          <div class="form-group" style="flex:1">
+            <label>Distance (km)</label>
+            <input type="number" id="distance_km" class="form-control" required>
+          </div>
+          <div class="form-group" style="flex:1">
+            <label>Duration (min)</label>
+            <input type="number" id="duration_min" class="form-control" required>
+          </div>
+        </div>
+        <div style="display:flex; gap:10px;">
+          <div class="form-group" style="flex:1">
+            <label>Base Cost ($)</label>
+            <input type="number" id="base_cost_usd" class="form-control" required>
+          </div>
+        </div>
+        <div style="display:flex; gap:10px;">
+          <div class="form-group" style="flex:1">
+            <label>Airline Code</label>
+            <input type="text" id="airline_code" class="form-control" required>
+          </div>
+          <div class="form-group" style="flex:1">
+            <label>Aircraft Code</label>
+            <input type="text" id="aircraft_code" class="form-control" required>
+          </div>
+        </div>
+        
+        <div class="modal-footer">
+          <button type="button" class="btn btn-outline" onclick="closeModal()">Cancel</button>
+          <button type="submit" class="btn btn-primary">Save Flight</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <script src="js/main.js"></script>
+  <script src="js/admin.js"></script>
+</body>
+</html>

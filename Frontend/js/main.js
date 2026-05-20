@@ -27,6 +27,7 @@ function buildNavbar(activePage) {
     const pages = [
         { href: 'index.html',     label: 'Home' },
         { href: 'dashboard.html', label: 'Route Planner' },
+        { href: 'admin.html',     label: 'Admin' },
     ];
 
     const links = pages.map(p =>
