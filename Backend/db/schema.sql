@@ -82,3 +82,17 @@ CREATE INDEX IF NOT EXISTS idx_airports_region      ON airports(region);
 CREATE INDEX IF NOT EXISTS idx_airports_type        ON airports(airport_type);
 CREATE INDEX IF NOT EXISTS idx_routes_pair          ON optimized_routes(origin_code, destination_code);
 CREATE INDEX IF NOT EXISTS idx_routes_computed_at   ON optimized_routes(computed_at);
+
+-- ── Flight segments backup (read-only copy, no FK constraints) ──
+
+CREATE TABLE IF NOT EXISTS flight_segments_copy (
+  segment_id       TEXT PRIMARY KEY,
+  origin_code      TEXT NOT NULL,
+  destination_code TEXT NOT NULL,
+  distance_km      INTEGER NOT NULL,
+  duration_min     INTEGER NOT NULL,
+  base_cost_usd    INTEGER NOT NULL,
+  airline_code     TEXT NOT NULL,
+  aircraft_code    TEXT NOT NULL,
+  copied_at        DATETIME DEFAULT CURRENT_TIMESTAMP
+);

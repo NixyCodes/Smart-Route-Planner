@@ -24,15 +24,23 @@ function toggleTheme() {
 
 // ── Navbar ────────────────────────────────────────────────────
 function buildNavbar(activePage) {
+    const isAdmin = !!localStorage.getItem('skyroute_admin_token');
+
     const pages = [
         { href: 'index.html',     label: 'Home' },
         { href: 'dashboard.html', label: 'Route Planner' },
-        { href: 'admin.html',     label: 'Admin' },
+        isAdmin
+            ? { href: 'admin.html', label: '🛡 Admin' }
+            : { href: 'login.html', label: 'Admin' },
     ];
 
     const links = pages.map(p =>
         `<a href="${p.href}" class="nav-link${activePage === p.href ? ' active' : ''}">${p.label}</a>`
     ).join('');
+
+    const adminRight = isAdmin
+        ? `<button class="btn btn-outline" style="font-size:12px;padding:5px 10px" onclick="adminLogout()">Sign out</button>`
+        : '';
 
     return `
     <nav class="navbar" id="navbar">
@@ -43,6 +51,7 @@ function buildNavbar(activePage) {
         </a>
         <div class="nav-links" id="nav-links">${links}</div>
         <div class="nav-right">
+          ${adminRight}
           <button class="btn-icon" onclick="toggleTheme()" title="Toggle theme">
             <span id="theme-icon">${getTheme() === 'dark' ? '☀' : '🌙'}</span>
           </button>
@@ -53,8 +62,15 @@ function buildNavbar(activePage) {
         ${pages.map(p =>
             `<a href="${p.href}" class="mobile-link${activePage === p.href ? ' active' : ''}">${p.label}</a>`
         ).join('')}
+        ${isAdmin ? `<button class="mobile-link" style="text-align:left;background:none;border:none;cursor:pointer;color:var(--danger)" onclick="adminLogout()">Sign out</button>` : ''}
       </div>
     </nav>`;
+}
+
+function adminLogout() {
+    localStorage.removeItem('skyroute_admin_token');
+    localStorage.removeItem('skyroute_admin_user');
+    window.location.href = 'login.html';
 }
 
 function toggleMobileMenu() {

@@ -249,18 +249,29 @@ function seed() {
 
     runAll();
 
+    // Refresh flight_segments_copy to mirror flight_segments
+    db.exec('DELETE FROM flight_segments_copy');
+    db.prepare(`
+        INSERT INTO flight_segments_copy
+            (segment_id, origin_code, destination_code, distance_km, duration_min, base_cost_usd, airline_code, aircraft_code, copied_at)
+        SELECT segment_id, origin_code, destination_code, distance_km, duration_min, base_cost_usd, airline_code, aircraft_code, CURRENT_TIMESTAMP
+        FROM flight_segments
+    `).run();
+
     const counts = {
         airports: db.prepare('SELECT COUNT(*) as n FROM airports').get().n,
         airlines: db.prepare('SELECT COUNT(*) as n FROM airlines').get().n,
         aircraft: db.prepare('SELECT COUNT(*) as n FROM aircraft').get().n,
         segments: db.prepare('SELECT COUNT(*) as n FROM flight_segments').get().n,
+        copy:     db.prepare('SELECT COUNT(*) as n FROM flight_segments_copy').get().n,
     };
 
     console.log('Database seeded successfully:');
-    console.log(`  airports : ${counts.airports}`);
-    console.log(`  airlines : ${counts.airlines}`);
-    console.log(`  aircraft : ${counts.aircraft}`);
-    console.log(`  segments : ${counts.segments}`);
+    console.log(`  airports            : ${counts.airports}`);
+    console.log(`  airlines            : ${counts.airlines}`);
+    console.log(`  aircraft            : ${counts.aircraft}`);
+    console.log(`  segments            : ${counts.segments}`);
+    console.log(`  segments_copy (bak) : ${counts.copy}`);
 }
 
 seed();
