@@ -7,5 +7,6 @@ router.get('/airports/:code',    ctrl.getAirport);
 router.get('/segments',          ctrl.getSegments);
 router.get('/stats',             ctrl.getStats);
 router.get('/routes/history',    ctrl.getRouteHistory);
+router.get('/search-log',        ctrl.getSearchLog);
 
 module.exports = router;

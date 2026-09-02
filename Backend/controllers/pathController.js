@@ -57,10 +57,10 @@ exports.compareRoutes = (req, res) => {
 
         const comparison = compareAll(source, destination);
 
-        // Cache every found result
+        // Cache every found result and log each as a separate search entry
         for (const [mode, result] of Object.entries(comparison)) {
             if (result.found) {
-                OptimizedRoute.upsert({
+                const payload = {
                     originCode:       source,
                     destinationCode:  destination,
                     optimizationType: mode,
@@ -69,7 +69,9 @@ exports.compareRoutes = (req, res) => {
                     totalDuration:    result.totalTime,
                     totalCost:        result.totalCost,
                     totalLayover:     result.totalLayover,
-                });
+                };
+                OptimizedRoute.upsert(payload);
+                SearchLog.insert(payload);
             }
         }
 

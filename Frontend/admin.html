@@ -390,6 +390,49 @@
         </div>
       </div>
 
+      <!-- Optimized Routes Cache -->
+      <div class="section-card">
+        <div class="section-head">
+          <div class="section-head-title">
+            Route Optimization Cache
+            <span class="badge badge-muted" id="opt-routes-count-badge" style="font-size:11px">—</span>
+          </div>
+          <div class="table-toolbar">
+            <button class="btn btn-outline" onclick="loadOptimizedRoutes()" style="font-size:12px;padding:6px 14px">Refresh</button>
+          </div>
+        </div>
+        <div class="section-body" style="padding-top:0;padding-bottom:0">
+          <div class="admin-alert" id="opt-routes-alert" style="margin:16px 0 0"></div>
+          <div class="table-wrap">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>ID</th>
+                  <th>Origin</th>
+                  <th>Destination</th>
+                  <th>Type</th>
+                  <th>Path</th>
+                  <th>Distance</th>
+                  <th>Duration</th>
+                  <th>Cost</th>
+                  <th>Layover</th>
+                  <th>Legs</th>
+                  <th>Computed At</th>
+                </tr>
+              </thead>
+              <tbody id="opt-routes-tbody">
+                <tr><td colspan="11">
+                  <div class="empty-state">
+                    <div class="empty-icon">&#128507;</div>
+                    Loading optimized routes...
+                  </div>
+                </td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
     </div>
   </main>
 
@@ -862,6 +905,52 @@
       if (e.key === 'Escape') { closeEditModal(); closeDeleteModal(); }
     });
 
+    // ── Optimized routes ──────────────────────────────────────
+    async function loadOptimizedRoutes() {
+      try {
+        const res = await fetch(`${ADMIN_API}/routes/history?limit=50`);
+        const data = await res.json();
+        renderOptRoutes(data.routes || []);
+      } catch {
+        showAlert('opt-routes-alert', 'error', 'Could not load optimized routes.');
+      }
+    }
+
+    function renderOptRoutes(routes) {
+      const tbody = document.getElementById('opt-routes-tbody');
+      document.getElementById('opt-routes-count-badge').textContent = `${routes.length} rows`;
+
+      if (!routes.length) {
+        tbody.innerHTML = `<tr><td colspan="11"><div class="empty-state"><div class="empty-icon">&#128507;</div>No routes cached yet. Use the planner to generate routes.</div></td></tr>`;
+        return;
+      }
+
+      const TYPE_LABEL = { cheapest: 'Cheapest', fastest: 'Fastest', smart: 'Smart', min_layover: 'Min Layover' };
+      const TYPE_COLOR = { cheapest: '#10b981', fastest: '#3b82f6', smart: '#8b5cf6', min_layover: '#f59e0b' };
+
+      tbody.innerHTML = routes.map(r => {
+        const color = TYPE_COLOR[r.optimization_type] || '#6b7280';
+        const label = TYPE_LABEL[r.optimization_type] || r.optimization_type;
+        const h = Math.floor(r.total_duration_min / 60);
+        const m = r.total_duration_min % 60;
+        const computedAt = new Date(r.computed_at).toLocaleString();
+        const pathDisplay = r.path_codes.split(',').join(' > ');
+        return `<tr>
+          <td style="color:var(--muted);font-size:12px">#${r.route_id}</td>
+          <td><strong>${r.origin_code}</strong> <span style="color:var(--muted);font-size:11px">${r.origin_city}</span></td>
+          <td><strong>${r.destination_code}</strong> <span style="color:var(--muted);font-size:11px">${r.dest_city}</span></td>
+          <td><span style="background:${color}22;color:${color};border:1px solid ${color}44;border-radius:6px;padding:2px 8px;font-size:11px;font-weight:700">${label}</span></td>
+          <td style="font-size:12px;color:var(--muted);font-family:monospace">${pathDisplay}</td>
+          <td>${r.total_distance_km.toLocaleString()} km</td>
+          <td>${h}h ${m}m</td>
+          <td style="color:#10b981;font-weight:600">$${r.total_cost_usd.toLocaleString()}</td>
+          <td>${r.total_layover_min ? r.total_layover_min + ' min' : '—'}</td>
+          <td>${r.segment_count}</td>
+          <td style="color:var(--muted);font-size:12px">${computedAt}</td>
+        </tr>`;
+      }).join('');
+    }
+
     // ── App ready (called by main.js after data loads) ────────
     async function onAppReady() {
       populateDropdowns();
@@ -870,6 +959,7 @@
       document.getElementById('auth-guard').style.display = 'none';
       document.getElementById('admin-main').style.display = 'block';
       loadFlights();
+      loadOptimizedRoutes();
     }
   </script>
 </body>

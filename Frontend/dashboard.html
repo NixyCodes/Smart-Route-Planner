@@ -129,6 +129,38 @@
         </div>
 
       </div>
+
+      <!-- Search Log Table -->
+      <div style="margin-top:36px;margin-bottom:8px">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;flex-wrap:wrap;gap:10px">
+          <div style="display:flex;align-items:center;gap:10px">
+            <span style="font-size:15px;font-weight:700;letter-spacing:-.01em">Route Search Log</span>
+            <span id="search-log-count" style="background:var(--bg-2);border:1px solid var(--border);border-radius:99px;padding:2px 10px;font-size:11px;color:var(--muted)">0 entries</span>
+          </div>
+          <button onclick="loadSearchLog()" style="padding:6px 14px;background:var(--bg-2);border:1px solid var(--border);border-radius:8px;color:var(--muted);font-size:12px;cursor:pointer">Refresh</button>
+        </div>
+        <div style="overflow-x:auto;border:1px solid var(--border);border-radius:12px;background:var(--card)">
+          <table style="width:100%;border-collapse:collapse;font-size:13px;min-width:700px">
+            <thead>
+              <tr style="border-bottom:1px solid var(--border)">
+                <th style="padding:10px 14px;text-align:left;font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.04em;white-space:nowrap">#</th>
+                <th style="padding:10px 14px;text-align:left;font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.04em;white-space:nowrap">Origin</th>
+                <th style="padding:10px 14px;text-align:left;font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.04em;white-space:nowrap">Destination</th>
+                <th style="padding:10px 14px;text-align:left;font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.04em;white-space:nowrap">Mode</th>
+                <th style="padding:10px 14px;text-align:left;font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.04em;white-space:nowrap">Path</th>
+                <th style="padding:10px 14px;text-align:left;font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.04em;white-space:nowrap">Cost</th>
+                <th style="padding:10px 14px;text-align:left;font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.04em;white-space:nowrap">Duration</th>
+                <th style="padding:10px 14px;text-align:left;font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.04em;white-space:nowrap">Distance</th>
+                <th style="padding:10px 14px;text-align:left;font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.04em;white-space:nowrap">Searched At</th>
+              </tr>
+            </thead>
+            <tbody id="search-log-tbody">
+              <tr><td colspan="9" style="padding:40px;text-align:center;color:var(--muted);font-size:13px">No searches yet. Use the optimizer above to generate routes.</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
     </div>
   </main>
 
@@ -170,6 +202,7 @@
       renderPopular();
       updateMap();
       loadHistory();
+      loadSearchLog();
     }
 
     // ── Selects ───────────────────────────────────────────────
@@ -262,6 +295,7 @@
           renderResults(data);
           updateMap();
           loadHistory();
+          loadSearchLog();
         } catch (err) {
           document.getElementById('results-area').innerHTML = `
             <div class="card" style="margin-top:16px;text-align:center;padding:32px">
@@ -306,6 +340,7 @@
         const data = await res.json();
         compareResults = data.comparison;
         renderComparison(compareResults);
+        loadSearchLog();
         loadHistory();
       } catch (err) {
         document.getElementById('compare-panel').innerHTML = `
@@ -585,6 +620,46 @@
             <span class="badge" style="background:${info.color}18;color:${info.color};border:1px solid ${info.color}40;flex-shrink:0;font-size:10px">${info.label}</span>
           </div>`;
       }).join('') + '</div>';
+    }
+
+    // ── Search log table ──────────────────────────────────────
+    async function loadSearchLog() {
+      try {
+        const res  = await fetch(`${API}/search-log?limit=100`);
+        const data = await res.json();
+        renderSearchLog(data.logs || []);
+      } catch (e) { /* silently ignore */ }
+    }
+
+    function renderSearchLog(logs) {
+      const tbody = document.getElementById('search-log-tbody');
+      const count = document.getElementById('search-log-count');
+      count.textContent = `${logs.length} entr${logs.length === 1 ? 'y' : 'ies'}`;
+
+      if (!logs.length) {
+        tbody.innerHTML = `<tr><td colspan="9" style="padding:40px;text-align:center;color:var(--muted);font-size:13px">No searches yet. Use the optimizer above to generate routes.</td></tr>`;
+        return;
+      }
+
+      tbody.innerHTML = logs.map((r, i) => {
+        const info  = MODE_INFO[r.optimization_type] || { icon:'', label: r.optimization_type, color:'#6b7280' };
+        const h     = Math.floor(r.total_duration_min / 60);
+        const m     = r.total_duration_min % 60;
+        const path  = r.path_codes.split(',').join(' > ');
+        const when  = new Date(r.searched_at).toLocaleString();
+        const rowBg = i % 2 === 0 ? '' : 'background:var(--bg-2)';
+        return `<tr style="${rowBg}">
+          <td style="padding:10px 14px;color:var(--muted);font-size:12px">${r.log_id}</td>
+          <td style="padding:10px 14px"><strong>${r.origin_code}</strong> <span style="color:var(--muted);font-size:11px">${r.origin_city}</span></td>
+          <td style="padding:10px 14px"><strong>${r.destination_code}</strong> <span style="color:var(--muted);font-size:11px">${r.dest_city}</span></td>
+          <td style="padding:10px 14px"><span style="background:${info.color}18;color:${info.color};border:1px solid ${info.color}40;border-radius:6px;padding:2px 8px;font-size:11px;font-weight:700;white-space:nowrap">${info.icon} ${info.label}</span></td>
+          <td style="padding:10px 14px;font-size:12px;color:var(--muted);font-family:monospace">${path}</td>
+          <td style="padding:10px 14px;color:#10b981;font-weight:600">$${r.total_cost_usd.toLocaleString()}</td>
+          <td style="padding:10px 14px">${h}h ${m}m</td>
+          <td style="padding:10px 14px;color:var(--muted)">${r.total_distance_km.toLocaleString()} km</td>
+          <td style="padding:10px 14px;color:var(--muted);font-size:12px">${when}</td>
+        </tr>`;
+      }).join('');
     }
 
     function loadHistoryRoute(from, to, mode) {

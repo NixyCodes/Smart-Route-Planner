@@ -1,6 +1,7 @@
 const Airport        = require('../models/Airport');
 const FlightSegment  = require('../models/FlightSegment');
 const OptimizedRoute = require('../models/OptimizedRoute');
+const SearchLog      = require('../models/SearchLog');
 
 exports.getAirports = (req, res) => {
     try {
@@ -54,6 +55,17 @@ exports.getRouteHistory = (req, res) => {
         return res.json({ routes });
     } catch (err) {
         console.error('[airportController.getRouteHistory]', err);
+        return res.status(500).json({ error: 'Internal server error' });
+    }
+};
+
+exports.getSearchLog = (req, res) => {
+    try {
+        const limit = Math.min(parseInt(req.query.limit) || 100, 200);
+        const logs  = SearchLog.getAll(limit);
+        return res.json({ logs });
+    } catch (err) {
+        console.error('[airportController.getSearchLog]', err);
         return res.status(500).json({ error: 'Internal server error' });
     }
 };
