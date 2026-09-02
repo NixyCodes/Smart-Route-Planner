@@ -1,32 +1,83 @@
-const dijkstra = require('../algorithms/dijkstra');
+const { optimize, compareAll } = require('../algorithms/optimizer');
+const OptimizedRoute = require('../models/OptimizedRoute');
+const SearchHistory = require('../models/SearchHistory');
+
+const VALID_MODES = ['cheapest', 'fastest', 'smart', 'min_layover'];
 
 exports.getShortestPath = (req, res) => {
-
     try {
-
         const { source, destination, optimizeBy } = req.body;
 
         if (!source || !destination) {
-
-            return res.status(400).json({
-                error: 'Source and destination required'
-            });
+            return res.status(400).json({ error: 'source and destination are required' });
+        }
+        if (source === destination) {
+            return res.status(400).json({ error: 'source and destination must differ' });
         }
 
-        const result = dijkstra(
-            source,
-            destination,
-            optimizeBy || 'distance'
-        );
+        const mode   = VALID_MODES.includes(optimizeBy) ? optimizeBy : 'smart';
+        const result = optimize(source, destination, mode);
+
+        if (result.found) {
+            const routeData = {
+                originCode:       source,
+                destinationCode:  destination,
+                optimizationType: mode,
+                path:             result.path,
+                totalDistance:    result.totalDistance,
+                totalDuration:    result.totalTime,
+                totalCost:        result.totalCost,
+                totalLayover:     result.totalLayover,
+            };
+
+            // Global cache update
+            OptimizedRoute.upsert(routeData);
+
+            // Specific user search log (append-only)
+            SearchHistory.insert(routeData);
+        }
 
         return res.json(result);
+    } catch (err) {
+        console.error('[pathController.getShortestPath]', err);
+        return res.status(500).json({ error: 'Internal server error' });
+    }
+};
 
-    } catch (error) {
+exports.compareRoutes = (req, res) => {
+    try {
+        const { source, destination } = req.body;
 
-        console.error(error);
+        if (!source || !destination) {
+            return res.status(400).json({ error: 'source and destination are required' });
+        }
+        if (source === destination) {
+            return res.status(400).json({ error: 'source and destination must differ' });
+        }
 
-        return res.status(500).json({
-            error: 'Server error'
-        });
+        const comparison = compareAll(source, destination);
+
+        // Cache every found result and log each as a separate search entry
+        for (const [mode, result] of Object.entries(comparison)) {
+            if (result.found) {
+                const payload = {
+                    originCode:       source,
+                    destinationCode:  destination,
+                    optimizationType: mode,
+                    path:             result.path,
+                    totalDistance:    result.totalDistance,
+                    totalDuration:    result.totalTime,
+                    totalCost:        result.totalCost,
+                    totalLayover:     result.totalLayover,
+                };
+                OptimizedRoute.upsert(payload);
+                SearchLog.insert(payload);
+            }
+        }
+
+        return res.json({ source, destination, comparison });
+    } catch (err) {
+        console.error('[pathController.compareRoutes]', err);
+        return res.status(500).json({ error: 'Internal server error' });
     }
 };

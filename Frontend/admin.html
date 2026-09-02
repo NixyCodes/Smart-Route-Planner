@@ -1,0 +1,966 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin – SkyRoute</title>
+  <link rel="stylesheet" href="css/style.css">
+  <style>
+    /* ── Admin layout ── */
+    .admin-wrap    { max-width: 1280px; margin: 0 auto; padding: 32px 24px; }
+    .admin-topbar  { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px; margin-bottom: 28px; }
+    .admin-title   { font-size: 22px; font-weight: 800; letter-spacing: -.02em; display: flex; align-items: center; gap: 10px; }
+    .admin-badge   { display: inline-flex; align-items: center; gap: 6px; background: rgba(139,92,246,.12); color: #8b5cf6; border: 1px solid rgba(139,92,246,.25); border-radius: var(--radius-full); padding: 4px 12px; font-size: 12px; font-weight: 600; }
+
+    /* ── Stats bar ── */
+    .admin-stats   { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 14px; margin-bottom: 28px; }
+    .admin-stat    { background: var(--card); border: 1px solid var(--card-border); border-radius: var(--radius); padding: 16px 18px; }
+    .admin-stat-v  { font-size: 26px; font-weight: 800; line-height: 1; margin-bottom: 4px; }
+    .admin-stat-l  { font-size: 12px; color: var(--muted); font-weight: 500; }
+
+    /* ── Section card ── */
+    .section-card  { background: var(--card); border: 1px solid var(--card-border); border-radius: var(--radius-lg); box-shadow: var(--shadow-sm); margin-bottom: 24px; overflow: hidden; }
+    .section-head  { padding: 18px 22px; border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 10px; }
+    .section-head-title { font-size: 15px; font-weight: 700; display: flex; align-items: center; gap: 8px; }
+    .section-body  { padding: 22px; }
+
+    /* ── Add Flight Form ── */
+    .form-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 14px; }
+    .form-group { display: flex; flex-direction: column; gap: 5px; min-width: 0; }
+    .form-label { font-size: 11px; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: .05em; }
+    .form-input, .form-select {
+      padding: 9px 12px;
+      background: var(--input-bg);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      font-size: 13px;
+      color: var(--text);
+      outline: none;
+      width: 100%;
+      min-width: 0;
+      transition: border-color var(--transition), box-shadow var(--transition);
+      appearance: auto;
+    }
+    .form-input:focus, .form-select:focus {
+      border-color: #8b5cf6;
+      box-shadow: 0 0 0 3px rgba(139,92,246,.12);
+    }
+    .form-input.error, .form-select.error { border-color: var(--danger); }
+    .form-hint { font-size: 11px; color: var(--subtle); }
+    .form-err  { font-size: 11px; color: var(--danger); display: none; }
+    .form-err.show { display: block; }
+    .form-actions { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; margin-top: 18px; padding-top: 18px; border-top: 1px solid var(--border); }
+
+    /* ── Alert ── */
+    .admin-alert {
+      padding: 11px 16px;
+      border-radius: var(--radius-sm);
+      font-size: 13px;
+      font-weight: 500;
+      margin-bottom: 16px;
+      display: none;
+      align-items: center;
+      gap: 8px;
+      animation: fadeIn .2s ease;
+    }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(-4px); } to { opacity: 1; transform: translateY(0); } }
+    .admin-alert.show   { display: flex; }
+    .admin-alert.success { background: rgba(16,185,129,.1); color: #059669; border: 1px solid rgba(16,185,129,.3); }
+    .admin-alert.error   { background: rgba(239,68,68,.1); color: #dc2626; border: 1px solid rgba(239,68,68,.3); }
+    .admin-alert.info    { background: var(--primary-10); color: var(--primary); border: 1px solid var(--primary-20); }
+
+    /* ── Flight table ── */
+    .table-toolbar { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+    .search-input  {
+      padding: 8px 12px;
+      background: var(--input-bg);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      font-size: 13px;
+      color: var(--text);
+      outline: none;
+      width: 240px;
+      transition: border-color var(--transition), box-shadow var(--transition);
+    }
+    .search-input:focus { border-color: var(--primary); box-shadow: 0 0 0 3px var(--primary-10); }
+    .table-wrap   { overflow-x: auto; }
+    .data-table   { width: 100%; border-collapse: collapse; font-size: 13px; min-width: 760px; }
+    .data-table th { padding: 10px 12px; text-align: left; font-size: 11px; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: .04em; border-bottom: 2px solid var(--border); white-space: nowrap; background: var(--bg-2); }
+    .data-table td { padding: 10px 12px; border-bottom: 1px solid var(--border); vertical-align: middle; }
+    .data-table tr:last-child td { border-bottom: none; }
+    .data-table tbody tr { transition: background var(--transition); }
+    .data-table tbody tr:hover { background: var(--bg-2); }
+    .seg-id    { font-family: 'Courier New', monospace; font-size: 12px; font-weight: 600; color: var(--muted); background: var(--bg-2); padding: 2px 6px; border-radius: 4px; }
+    .route-tag { font-weight: 700; font-size: 13px; }
+    .airline-chip { display: inline-flex; align-items: center; background: var(--primary-10); color: var(--primary); border-radius: var(--radius-full); padding: 2px 8px; font-size: 11px; font-weight: 700; }
+    .action-btns { display: flex; gap: 6px; align-items: center; }
+    .btn-edit {
+      padding: 5px 11px; border-radius: 6px;
+      background: rgba(14,165,233,.1); color: var(--primary);
+      font-size: 12px; font-weight: 600; border: 1px solid rgba(14,165,233,.3);
+      cursor: pointer; transition: all var(--transition); white-space: nowrap;
+    }
+    .btn-edit:hover { background: rgba(14,165,233,.2); }
+    .btn-del {
+      padding: 5px 11px; border-radius: 6px;
+      background: rgba(239,68,68,.1); color: var(--danger);
+      font-size: 12px; font-weight: 600; border: 1px solid rgba(239,68,68,.25);
+      cursor: pointer; transition: all var(--transition); white-space: nowrap;
+    }
+    .btn-del:hover { background: rgba(239,68,68,.2); }
+    .empty-state { text-align: center; padding: 56px 24px; color: var(--muted); font-size: 14px; }
+    .empty-icon  { font-size: 36px; margin-bottom: 10px; }
+
+    /* ── Modal ── */
+    .modal-overlay {
+      position: fixed; inset: 0; z-index: 1000;
+      background: rgba(0,0,0,.52); backdrop-filter: blur(4px);
+      display: flex; align-items: center; justify-content: center; padding: 20px;
+      opacity: 0; pointer-events: none;
+      transition: opacity .2s ease;
+    }
+    .modal-overlay.open { opacity: 1; pointer-events: all; }
+    .modal-box {
+      background: var(--card); border: 1px solid var(--card-border);
+      border-radius: var(--radius-xl); box-shadow: var(--shadow-xl);
+      width: 100%; max-width: 580px; max-height: 92vh;
+      overflow-y: auto;
+      transform: translateY(24px) scale(.98);
+      transition: transform .22s ease;
+    }
+    .modal-overlay.open .modal-box { transform: translateY(0) scale(1); }
+    .modal-head {
+      padding: 20px 24px; border-bottom: 1px solid var(--border);
+      display: flex; align-items: center; justify-content: space-between;
+      position: sticky; top: 0; background: var(--card); z-index: 1;
+    }
+    .modal-title { font-size: 16px; font-weight: 700; }
+    .modal-close {
+      width: 32px; height: 32px; border-radius: 8px;
+      background: var(--bg-2); border: none; color: var(--muted);
+      font-size: 20px; cursor: pointer; display: flex; align-items: center;
+      justify-content: center; transition: all var(--transition); line-height: 1;
+      flex-shrink: 0;
+    }
+    .modal-close:hover { background: var(--danger); color: #fff; }
+    .modal-body { padding: 22px 24px; }
+    .modal-foot { padding: 16px 24px; border-top: 1px solid var(--border); display: flex; gap: 10px; justify-content: flex-end; flex-wrap: wrap; }
+
+    /* ── Confirm ── */
+    .confirm-box {
+      background: var(--card); border: 1px solid var(--card-border);
+      border-radius: var(--radius-xl); box-shadow: var(--shadow-xl);
+      width: 100%; max-width: 360px; padding: 32px 28px;
+      text-align: center;
+      transform: translateY(24px) scale(.98);
+      transition: transform .22s ease;
+    }
+    .modal-overlay.open .confirm-box { transform: translateY(0) scale(1); }
+    .confirm-icon  { font-size: 42px; margin-bottom: 14px; }
+    .confirm-title { font-size: 17px; font-weight: 700; margin-bottom: 8px; }
+    .confirm-msg   { font-size: 13px; color: var(--muted); margin-bottom: 24px; line-height: 1.6; }
+    .confirm-actions { display: flex; gap: 10px; justify-content: center; }
+
+    /* ── Buttons ── */
+    .btn-purple {
+      padding: 9px 18px; border-radius: var(--radius-sm);
+      background: linear-gradient(135deg, #8b5cf6, #7c3aed); color: #fff;
+      font-size: 13px; font-weight: 700; border: none; cursor: pointer;
+      transition: opacity var(--transition), transform var(--transition);
+      white-space: nowrap; display: inline-flex; align-items: center; gap: 6px;
+    }
+    .btn-purple:hover:not(:disabled) { opacity: .88; transform: translateY(-1px); }
+    .btn-purple:disabled { opacity: .55; cursor: not-allowed; transform: none; }
+    .btn-danger-solid {
+      padding: 9px 20px; border-radius: var(--radius-sm);
+      background: var(--danger); color: #fff;
+      font-size: 13px; font-weight: 700; border: none; cursor: pointer;
+      transition: opacity var(--transition);
+    }
+    .btn-danger-solid:hover { opacity: .88; }
+    .btn-danger-solid:disabled { opacity: .55; cursor: not-allowed; }
+
+    /* ── Spinner ── */
+    .spinner-sm {
+      display: inline-block; width: 13px; height: 13px;
+      border: 2px solid rgba(255,255,255,.35); border-top-color: #fff;
+      border-radius: 50%; animation: spin .6s linear infinite;
+      vertical-align: middle;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* ── Auth guard ── */
+    .auth-guard {
+      position: fixed; inset: 0; z-index: 2000;
+      background: var(--bg); display: flex; align-items: center;
+      justify-content: center; flex-direction: column; gap: 14px;
+    }
+    .auth-guard-text { font-size: 14px; color: var(--muted); }
+    .loading-dots::after {
+      content: ''; animation: dots 1.4s infinite;
+    }
+    @keyframes dots {
+      0%   { content: ''; }
+      33%  { content: '.'; }
+      66%  { content: '..'; }
+      100% { content: '...'; }
+    }
+
+    @media (max-width: 640px) {
+      .form-grid { grid-template-columns: 1fr 1fr; }
+      .admin-topbar > div:last-child { width: 100%; }
+      .admin-topbar > div:last-child button { flex: 1; }
+      .admin-topbar > div:last-child { display: flex; gap: 10px; }
+    }
+    @media (max-width: 400px) {
+      .form-grid { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body class="page-wrapper">
+  <script>window._activePage = 'admin.html';</script>
+
+  <!-- Auth guard: shown while verifying token -->
+  <div class="auth-guard" id="auth-guard">
+    <div class="brand-icon" style="width:48px;height:48px;font-size:22px">✈</div>
+    <div class="auth-guard-text loading-dots">Verifying admin access</div>
+  </div>
+
+  <div id="navbar-container"></div>
+
+  <main style="display:none" id="admin-main">
+    <div class="admin-wrap">
+
+      <!-- Top bar -->
+      <div class="admin-topbar">
+        <div>
+          <div class="admin-title">
+            🛡 Admin Dashboard
+            <span class="admin-badge">✈ Flight Management</span>
+          </div>
+          <div style="font-size:13px;color:var(--muted);margin-top:5px">
+            Logged in as <strong id="admin-user-label">admin</strong>
+            <span style="margin:0 6px;color:var(--border)">·</span>
+            <a href="#" onclick="logout()" style="color:var(--danger);font-weight:600;text-decoration:none">Sign out</a>
+          </div>
+        </div>
+        <div style="display:flex;gap:10px;align-items:center">
+          <button class="btn btn-outline" onclick="loadFlights()" style="font-size:13px;padding:8px 14px">⟳ Refresh</button>
+          <button class="btn-purple" onclick="scrollToForm()">+ Add Flight</button>
+        </div>
+      </div>
+
+      <!-- Stats -->
+      <div class="admin-stats">
+        <div class="admin-stat">
+          <div class="admin-stat-v text-primary" id="stat-total">—</div>
+          <div class="admin-stat-l">Total Segments</div>
+        </div>
+        <div class="admin-stat">
+          <div class="admin-stat-v" style="color:#10b981" id="stat-airlines">—</div>
+          <div class="admin-stat-l">Airlines</div>
+        </div>
+        <div class="admin-stat">
+          <div class="admin-stat-v" style="color:#8b5cf6" id="stat-pairs">—</div>
+          <div class="admin-stat-l">Airport Pairs</div>
+        </div>
+        <div class="admin-stat">
+          <div class="admin-stat-v" style="color:#f97316" id="stat-avg-cost">—</div>
+          <div class="admin-stat-l">Avg Cost (USD)</div>
+        </div>
+      </div>
+
+      <!-- Add Flight Form -->
+      <div class="section-card" id="add-form-section">
+        <div class="section-head">
+          <div class="section-head-title">✈ Add New Flight Segment</div>
+        </div>
+        <div class="section-body">
+          <div class="admin-alert" id="form-alert"></div>
+          <div class="form-grid">
+            <div class="form-group">
+              <label class="form-label">Segment ID *</label>
+              <input type="text" class="form-input" id="f-id" placeholder="e.g. FS265" maxlength="10"
+                oninput="clearFieldErr('f-id','err-id')">
+              <span class="form-hint">Unique ID (e.g. FS265)</span>
+              <span class="form-err" id="err-id">Required (min 2 chars)</span>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Origin Airport *</label>
+              <select class="form-select" id="f-origin" onchange="clearFieldErr('f-origin','err-origin')">
+                <option value="">Select airport…</option>
+              </select>
+              <span class="form-err" id="err-origin">Select an origin</span>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Destination Airport *</label>
+              <select class="form-select" id="f-dest" onchange="clearFieldErr('f-dest','err-dest')">
+                <option value="">Select airport…</option>
+              </select>
+              <span class="form-err" id="err-dest">Select a destination</span>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Distance (km) *</label>
+              <input type="number" class="form-input" id="f-dist" placeholder="e.g. 5539" min="1" max="25000"
+                oninput="clearFieldErr('f-dist','err-dist')">
+              <span class="form-err" id="err-dist">Must be a positive number</span>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Duration (min) *</label>
+              <input type="number" class="form-input" id="f-dur" placeholder="e.g. 420" min="1" max="2000"
+                oninput="clearFieldErr('f-dur','err-dur')">
+              <span class="form-err" id="err-dur">Must be a positive number</span>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Base Cost (USD) *</label>
+              <input type="number" class="form-input" id="f-cost" placeholder="e.g. 820" min="1" max="50000"
+                oninput="clearFieldErr('f-cost','err-cost')">
+              <span class="form-err" id="err-cost">Must be a positive number</span>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Airline *</label>
+              <select class="form-select" id="f-airline" onchange="clearFieldErr('f-airline','err-airline')">
+                <option value="">Select airline…</option>
+              </select>
+              <span class="form-err" id="err-airline">Select an airline</span>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Aircraft *</label>
+              <select class="form-select" id="f-aircraft" onchange="clearFieldErr('f-aircraft','err-aircraft')">
+                <option value="">Select aircraft…</option>
+                <option value="B777">Boeing 777-300ER</option>
+                <option value="B787">Boeing 787-9 Dreamliner</option>
+                <option value="A380">Airbus A380-800</option>
+                <option value="A350">Airbus A350-900</option>
+                <option value="B747">Boeing 747-400</option>
+                <option value="A320">Airbus A320neo</option>
+                <option value="B737">Boeing 737-800</option>
+                <option value="A321">Airbus A321neo</option>
+              </select>
+              <span class="form-err" id="err-aircraft">Select an aircraft</span>
+            </div>
+          </div>
+          <div class="form-actions">
+            <button class="btn-purple" id="add-btn" onclick="addFlight()">
+              ✈ Add Flight to Database
+            </button>
+            <button class="btn btn-outline" onclick="clearForm()" style="font-size:13px">Clear Form</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Flight list -->
+      <div class="section-card">
+        <div class="section-head">
+          <div class="section-head-title">
+            📋 All Flight Segments
+            <span class="badge badge-muted" id="flight-count-badge" style="font-size:11px">—</span>
+          </div>
+          <div class="table-toolbar">
+            <input type="text" class="search-input" id="search-input"
+              placeholder="🔍 Search ID, route, airline…" oninput="filterFlights()">
+          </div>
+        </div>
+        <div class="section-body" style="padding-top:0;padding-bottom:0">
+          <div class="admin-alert" id="table-alert" style="margin:16px 0 0"></div>
+          <div class="table-wrap">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>ID</th>
+                  <th>Route</th>
+                  <th>Distance</th>
+                  <th>Duration</th>
+                  <th>Cost</th>
+                  <th>Airline</th>
+                  <th>Aircraft</th>
+                  <th style="text-align:right">Actions</th>
+                </tr>
+              </thead>
+              <tbody id="flights-tbody">
+                <tr><td colspan="8">
+                  <div class="empty-state">
+                    <div class="empty-icon">✈</div>
+                    Loading flights from database…
+                  </div>
+                </td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- Optimized Routes Cache -->
+      <div class="section-card">
+        <div class="section-head">
+          <div class="section-head-title">
+            Route Optimization Cache
+            <span class="badge badge-muted" id="opt-routes-count-badge" style="font-size:11px">—</span>
+          </div>
+          <div class="table-toolbar">
+            <button class="btn btn-outline" onclick="loadOptimizedRoutes()" style="font-size:12px;padding:6px 14px">Refresh</button>
+          </div>
+        </div>
+        <div class="section-body" style="padding-top:0;padding-bottom:0">
+          <div class="admin-alert" id="opt-routes-alert" style="margin:16px 0 0"></div>
+          <div class="table-wrap">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>ID</th>
+                  <th>Origin</th>
+                  <th>Destination</th>
+                  <th>Type</th>
+                  <th>Path</th>
+                  <th>Distance</th>
+                  <th>Duration</th>
+                  <th>Cost</th>
+                  <th>Layover</th>
+                  <th>Legs</th>
+                  <th>Computed At</th>
+                </tr>
+              </thead>
+              <tbody id="opt-routes-tbody">
+                <tr><td colspan="11">
+                  <div class="empty-state">
+                    <div class="empty-icon">&#128507;</div>
+                    Loading optimized routes...
+                  </div>
+                </td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </main>
+
+  <div id="footer-container"></div>
+
+  <!-- Edit Modal -->
+  <div class="modal-overlay" id="edit-modal">
+    <div class="modal-box">
+      <div class="modal-head">
+        <div class="modal-title">✏ Edit Flight Segment — <span id="edit-seg-id-label" style="color:var(--muted);font-size:14px"></span></div>
+        <button class="modal-close" onclick="closeEditModal()" aria-label="Close">×</button>
+      </div>
+      <div class="modal-body">
+        <div class="admin-alert" id="edit-alert"></div>
+        <input type="hidden" id="edit-id">
+        <div class="form-grid">
+          <div class="form-group">
+            <label class="form-label">Origin Airport *</label>
+            <select class="form-select" id="edit-origin" onchange="clearFieldErr('edit-origin','err-edit-origin')"></select>
+            <span class="form-err" id="err-edit-origin">Select an origin</span>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Destination Airport *</label>
+            <select class="form-select" id="edit-dest" onchange="clearFieldErr('edit-dest','err-edit-dest')"></select>
+            <span class="form-err" id="err-edit-dest">Select a destination</span>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Distance (km) *</label>
+            <input type="number" class="form-input" id="edit-dist" min="1" max="25000"
+              oninput="clearFieldErr('edit-dist','err-edit-dist')">
+            <span class="form-err" id="err-edit-dist">Must be positive</span>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Duration (min) *</label>
+            <input type="number" class="form-input" id="edit-dur" min="1" max="2000"
+              oninput="clearFieldErr('edit-dur','err-edit-dur')">
+            <span class="form-err" id="err-edit-dur">Must be positive</span>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Base Cost (USD) *</label>
+            <input type="number" class="form-input" id="edit-cost" min="1" max="50000"
+              oninput="clearFieldErr('edit-cost','err-edit-cost')">
+            <span class="form-err" id="err-edit-cost">Must be positive</span>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Airline *</label>
+            <select class="form-select" id="edit-airline" onchange="clearFieldErr('edit-airline','err-edit-airline')"></select>
+            <span class="form-err" id="err-edit-airline">Select an airline</span>
+          </div>
+          <div class="form-group" style="grid-column: span 2">
+            <label class="form-label">Aircraft *</label>
+            <select class="form-select" id="edit-aircraft" onchange="clearFieldErr('edit-aircraft','err-edit-aircraft')">
+              <option value="">Select aircraft…</option>
+              <option value="B777">Boeing 777-300ER</option>
+              <option value="B787">Boeing 787-9 Dreamliner</option>
+              <option value="A380">Airbus A380-800</option>
+              <option value="A350">Airbus A350-900</option>
+              <option value="B747">Boeing 747-400</option>
+              <option value="A320">Airbus A320neo</option>
+              <option value="B737">Boeing 737-800</option>
+              <option value="A321">Airbus A321neo</option>
+            </select>
+            <span class="form-err" id="err-edit-aircraft">Select an aircraft</span>
+          </div>
+        </div>
+      </div>
+      <div class="modal-foot">
+        <button class="btn btn-outline" onclick="closeEditModal()">Cancel</button>
+        <button class="btn-purple" id="save-edit-btn" onclick="saveEdit()">Save Changes</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Delete Confirm Modal -->
+  <div class="modal-overlay" id="delete-modal">
+    <div class="confirm-box">
+      <div class="confirm-icon">🗑</div>
+      <div class="confirm-title">Delete this flight?</div>
+      <div class="confirm-msg" id="delete-msg">
+        This will permanently remove the segment from the database.
+      </div>
+      <div class="confirm-actions">
+        <button class="btn btn-outline" onclick="closeDeleteModal()">Cancel</button>
+        <button class="btn-danger-solid" id="confirm-del-btn" onclick="confirmDelete()">Delete</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="js/dijkstra.js"></script>
+  <script src="js/main.js"></script>
+  <script>
+    const ADMIN_API = 'http://localhost:5000/api';
+    let allFlights     = [];
+    let deleteTargetId = null;
+
+    // ── Auth ──────────────────────────────────────────────────
+    async function checkAuth() {
+      const token = localStorage.getItem('skyroute_admin_token');
+      if (!token) { window.location.href = 'login.html'; return false; }
+      try {
+        const res = await fetch(`${ADMIN_API}/admin/auth/verify`, {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+        if (!res.ok) throw new Error();
+        const data = await res.json();
+        document.getElementById('admin-user-label').textContent = data.admin?.username || 'admin';
+        return true;
+      } catch {
+        localStorage.removeItem('skyroute_admin_token');
+        window.location.href = 'login.html';
+        return false;
+      }
+    }
+
+    function authHeader() {
+      return { Authorization: `Bearer ${localStorage.getItem('skyroute_admin_token')}` };
+    }
+
+    function logout() {
+      localStorage.removeItem('skyroute_admin_token');
+      localStorage.removeItem('skyroute_admin_user');
+      window.location.href = 'login.html';
+    }
+
+    // ── Alerts ────────────────────────────────────────────────
+    function showAlert(id, type, msg) {
+      const el = document.getElementById(id);
+      el.className = `admin-alert show ${type}`;
+      const icon = type === 'success' ? '✓' : type === 'error' ? '✕' : 'ℹ';
+      el.innerHTML = `<span style="font-size:16px">${icon}</span><span>${msg}</span>`;
+      if (type === 'success') setTimeout(() => hideAlert(id), 4000);
+    }
+    function hideAlert(id) {
+      document.getElementById(id).className = 'admin-alert';
+    }
+
+    // ── Load flights ──────────────────────────────────────────
+    async function loadFlights() {
+      try {
+        const res  = await fetch(`${ADMIN_API}/admin/flights`, { headers: authHeader() });
+        if (res.status === 401) { logout(); return; }
+        const data = await res.json();
+        allFlights  = data.flights || [];
+        renderTable(allFlights);
+        updateStats(allFlights);
+      } catch {
+        showAlert('table-alert', 'error', 'Could not load flights. Ensure backend is running on port 5000.');
+      }
+    }
+
+    function updateStats(flights) {
+      const airlines = new Set(flights.map(f => f.airline_code)).size;
+      const pairs    = new Set(flights.map(f => `${f.origin_code}${f.destination_code}`)).size;
+      const avgCost  = flights.length ? Math.round(flights.reduce((s, f) => s + f.base_cost_usd, 0) / flights.length) : 0;
+      document.getElementById('stat-total').textContent    = flights.length.toLocaleString();
+      document.getElementById('stat-airlines').textContent = airlines;
+      document.getElementById('stat-pairs').textContent    = pairs;
+      document.getElementById('stat-avg-cost').textContent = `$${avgCost.toLocaleString()}`;
+    }
+
+    // ── Render table ──────────────────────────────────────────
+    function renderTable(flights) {
+      const tbody = document.getElementById('flights-tbody');
+      document.getElementById('flight-count-badge').textContent = `${flights.length} rows`;
+
+      if (!flights.length) {
+        tbody.innerHTML = `<tr><td colspan="8">
+          <div class="empty-state">
+            <div class="empty-icon">✈</div>
+            No flights found. Add one above.
+          </div>
+        </td></tr>`;
+        return;
+      }
+
+      tbody.innerHTML = flights.map(f => `
+        <tr>
+          <td><span class="seg-id">${esc(f.segment_id)}</span></td>
+          <td>
+            <div class="route-tag">${esc(f.origin_code)} → ${esc(f.destination_code)}</div>
+            <div style="font-size:11px;color:var(--muted);margin-top:2px">${esc(f.origin_city||'')} → ${esc(f.dest_city||'')}</div>
+          </td>
+          <td style="white-space:nowrap">${Number(f.distance_km).toLocaleString()} km</td>
+          <td style="white-space:nowrap">${formatTime(f.duration_min)}</td>
+          <td style="white-space:nowrap;font-weight:600">$${Number(f.base_cost_usd).toLocaleString()}</td>
+          <td>
+            <span class="airline-chip">${esc(f.airline_code)}</span>
+            <div style="font-size:11px;color:var(--muted);margin-top:2px">${esc(f.airline_name||'')}</div>
+          </td>
+          <td>
+            <div style="font-size:12px;font-weight:600">${esc(f.aircraft_code)}</div>
+            <div style="font-size:11px;color:var(--muted)">${esc(f.aircraft_name||'')}</div>
+          </td>
+          <td style="text-align:right">
+            <div class="action-btns" style="justify-content:flex-end">
+              <button class="btn-edit" onclick="openEditModal('${f.segment_id}')">Edit</button>
+              <button class="btn-del"  onclick="openDeleteModal('${f.segment_id}')">Delete</button>
+            </div>
+          </td>
+        </tr>`).join('');
+    }
+
+    // XSS-safe escaping
+    function esc(str) {
+      return String(str ?? '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+    }
+
+    // ── Filter ────────────────────────────────────────────────
+    function filterFlights() {
+      const q = document.getElementById('search-input').value.toLowerCase().trim();
+      if (!q) { renderTable(allFlights); return; }
+      renderTable(allFlights.filter(f =>
+        [f.segment_id, f.origin_code, f.destination_code, f.airline_code,
+         f.airline_name, f.origin_city, f.dest_city, f.aircraft_code, f.aircraft_name]
+          .some(v => (v||'').toLowerCase().includes(q))
+      ));
+    }
+
+    // ── Populate dropdowns ────────────────────────────────────
+    function populateDropdowns() {
+      const AIRLINES_LIST = [
+        ['EK','Emirates'],['DL','Delta Air Lines'],['UA','United Airlines'],
+        ['AA','American Airlines'],['BA','British Airways'],['AF','Air France'],
+        ['LH','Lufthansa'],['SQ','Singapore Airlines'],['QF','Qantas Airways'],
+        ['QR','Qatar Airways'],['CX','Cathay Pacific'],['TK','Turkish Airlines'],
+        ['AI','Air India'],['6E','IndiGo'],['AK','AirAsia'],
+        ['AC','Air Canada'],['VA','Virgin Australia'],['CA','Air China'],
+      ];
+
+      const airportOpts = ['<option value="">Select airport…</option>'].concat(
+        AIRPORTS.map(a => `<option value="${a[0]}">${a[1]} (${a[0]})</option>`)
+      ).join('');
+      const airlineOpts = ['<option value="">Select airline…</option>'].concat(
+        AIRLINES_LIST.map(([c, n]) => `<option value="${c}">${n} (${c})</option>`)
+      ).join('');
+
+      ['f-origin','f-dest','edit-origin','edit-dest'].forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.innerHTML = airportOpts;
+      });
+      ['f-airline','edit-airline'].forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.innerHTML = airlineOpts;
+      });
+    }
+
+    // ── Field-level validation ────────────────────────────────
+    function clearFieldErr(inputId, errId) {
+      document.getElementById(inputId)?.classList.remove('error');
+      document.getElementById(errId)?.classList.remove('show');
+    }
+
+    function validateField(inputId, errId, check) {
+      const el = document.getElementById(inputId);
+      const ok = check(el?.value ?? '');
+      el?.classList.toggle('error', !ok);
+      document.getElementById(errId)?.classList.toggle('show', !ok);
+      return ok;
+    }
+
+    function validateAddForm() {
+      return [
+        validateField('f-id',       'err-id',       v => v.trim().length >= 2),
+        validateField('f-origin',   'err-origin',   v => v !== ''),
+        validateField('f-dest',     'err-dest',     v => v !== ''),
+        validateField('f-dist',     'err-dist',     v => Number(v) > 0),
+        validateField('f-dur',      'err-dur',      v => Number(v) > 0),
+        validateField('f-cost',     'err-cost',     v => Number(v) > 0),
+        validateField('f-airline',  'err-airline',  v => v !== ''),
+        validateField('f-aircraft', 'err-aircraft', v => v !== ''),
+      ].every(Boolean);
+    }
+
+    function validateEditForm() {
+      return [
+        validateField('edit-origin',   'err-edit-origin',   v => v !== ''),
+        validateField('edit-dest',     'err-edit-dest',     v => v !== ''),
+        validateField('edit-dist',     'err-edit-dist',     v => Number(v) > 0),
+        validateField('edit-dur',      'err-edit-dur',      v => Number(v) > 0),
+        validateField('edit-cost',     'err-edit-cost',     v => Number(v) > 0),
+        validateField('edit-airline',  'err-edit-airline',  v => v !== ''),
+        validateField('edit-aircraft', 'err-edit-aircraft', v => v !== ''),
+      ].every(Boolean);
+    }
+
+    // ── Add flight ────────────────────────────────────────────
+    async function addFlight() {
+      hideAlert('form-alert');
+      if (!validateAddForm()) {
+        showAlert('form-alert', 'error', 'Please fix the highlighted fields before submitting.');
+        return;
+      }
+      const origin = document.getElementById('f-origin').value;
+      const dest   = document.getElementById('f-dest').value;
+      if (origin === dest) {
+        showAlert('form-alert', 'error', 'Origin and destination airports must be different.');
+        return;
+      }
+
+      const btn = document.getElementById('add-btn');
+      btn.disabled = true;
+      btn.innerHTML = '<span class="spinner-sm"></span> Adding to database…';
+
+      const body = {
+        segment_id:       document.getElementById('f-id').value.trim().toUpperCase(),
+        origin_code:      origin,
+        destination_code: dest,
+        distance_km:      Number(document.getElementById('f-dist').value),
+        duration_min:     Number(document.getElementById('f-dur').value),
+        base_cost_usd:    Number(document.getElementById('f-cost').value),
+        airline_code:     document.getElementById('f-airline').value,
+        aircraft_code:    document.getElementById('f-aircraft').value,
+      };
+
+      try {
+        const res  = await fetch(`${ADMIN_API}/admin/flights`, {
+          method:  'POST',
+          headers: { 'Content-Type': 'application/json', ...authHeader() },
+          body:    JSON.stringify(body),
+        });
+        const data = await res.json();
+        if (!res.ok) { showAlert('form-alert', 'error', data.error || 'Failed to add flight.'); return; }
+        showAlert('form-alert', 'success', `Flight ${body.segment_id} added and saved to database.`);
+        clearForm();
+        loadFlights();
+      } catch {
+        showAlert('form-alert', 'error', 'Server error. Is the backend running?');
+      } finally {
+        btn.disabled = false;
+        btn.innerHTML = '✈ Add Flight to Database';
+      }
+    }
+
+    function clearForm() {
+      ['f-id','f-dist','f-dur','f-cost'].forEach(id => { const el = document.getElementById(id); if (el) el.value = ''; });
+      ['f-origin','f-dest','f-airline','f-aircraft'].forEach(id => { const el = document.getElementById(id); if (el) el.value = ''; });
+      ['f-id','f-origin','f-dest','f-dist','f-dur','f-cost','f-airline','f-aircraft'].forEach(id =>
+        document.getElementById(id)?.classList.remove('error')
+      );
+      ['err-id','err-origin','err-dest','err-dist','err-dur','err-cost','err-airline','err-aircraft'].forEach(id =>
+        document.getElementById(id)?.classList.remove('show')
+      );
+    }
+
+    function scrollToForm() {
+      document.getElementById('add-form-section').scrollIntoView({ behavior: 'smooth', block: 'start' });
+      setTimeout(() => document.getElementById('f-id').focus(), 450);
+    }
+
+    // ── Edit modal ────────────────────────────────────────────
+    function openEditModal(id) {
+      const f = allFlights.find(x => x.segment_id === id);
+      if (!f) return;
+      document.getElementById('edit-id').value             = f.segment_id;
+      document.getElementById('edit-seg-id-label').textContent = f.segment_id;
+      document.getElementById('edit-origin').value         = f.origin_code;
+      document.getElementById('edit-dest').value           = f.destination_code;
+      document.getElementById('edit-dist').value           = f.distance_km;
+      document.getElementById('edit-dur').value            = f.duration_min;
+      document.getElementById('edit-cost').value           = f.base_cost_usd;
+      document.getElementById('edit-airline').value        = f.airline_code;
+      document.getElementById('edit-aircraft').value       = f.aircraft_code;
+      // Clear any previous errors
+      ['edit-origin','edit-dest','edit-dist','edit-dur','edit-cost','edit-airline','edit-aircraft'].forEach(id =>
+        document.getElementById(id)?.classList.remove('error')
+      );
+      ['err-edit-origin','err-edit-dest','err-edit-dist','err-edit-dur','err-edit-cost','err-edit-airline','err-edit-aircraft'].forEach(id =>
+        document.getElementById(id)?.classList.remove('show')
+      );
+      hideAlert('edit-alert');
+      document.getElementById('edit-modal').classList.add('open');
+    }
+
+    function closeEditModal() {
+      document.getElementById('edit-modal').classList.remove('open');
+    }
+
+    async function saveEdit() {
+      hideAlert('edit-alert');
+      if (!validateEditForm()) {
+        showAlert('edit-alert', 'error', 'Please fix the highlighted fields.');
+        return;
+      }
+      const origin = document.getElementById('edit-origin').value;
+      const dest   = document.getElementById('edit-dest').value;
+      if (origin === dest) { showAlert('edit-alert', 'error', 'Origin and destination must differ.'); return; }
+
+      const id  = document.getElementById('edit-id').value;
+      const btn = document.getElementById('save-edit-btn');
+      btn.disabled = true;
+      btn.innerHTML = '<span class="spinner-sm"></span> Saving…';
+
+      try {
+        const res  = await fetch(`${ADMIN_API}/admin/flights/${id}`, {
+          method:  'PUT',
+          headers: { 'Content-Type': 'application/json', ...authHeader() },
+          body:    JSON.stringify({
+            origin_code:      origin,
+            destination_code: dest,
+            distance_km:      Number(document.getElementById('edit-dist').value),
+            duration_min:     Number(document.getElementById('edit-dur').value),
+            base_cost_usd:    Number(document.getElementById('edit-cost').value),
+            airline_code:     document.getElementById('edit-airline').value,
+            aircraft_code:    document.getElementById('edit-aircraft').value,
+          }),
+        });
+        const data = await res.json();
+        if (!res.ok) { showAlert('edit-alert', 'error', data.error || 'Update failed.'); return; }
+        closeEditModal();
+        showAlert('table-alert', 'success', `Flight ${id} updated and saved to database.`);
+        loadFlights();
+      } catch {
+        showAlert('edit-alert', 'error', 'Server error. Please try again.');
+      } finally {
+        btn.disabled = false;
+        btn.innerHTML = 'Save Changes';
+      }
+    }
+
+    // ── Delete modal ──────────────────────────────────────────
+    function openDeleteModal(id) {
+      deleteTargetId = id;
+      document.getElementById('delete-msg').textContent =
+        `Permanently delete flight segment "${id}" from the database? This cannot be undone.`;
+      document.getElementById('delete-modal').classList.add('open');
+    }
+
+    function closeDeleteModal() {
+      document.getElementById('delete-modal').classList.remove('open');
+      deleteTargetId = null;
+    }
+
+    async function confirmDelete() {
+      if (!deleteTargetId) return;
+      const btn = document.getElementById('confirm-del-btn');
+      btn.disabled = true;
+      btn.textContent = 'Deleting…';
+      try {
+        const res  = await fetch(`${ADMIN_API}/admin/flights/${deleteTargetId}`, {
+          method: 'DELETE', headers: authHeader(),
+        });
+        const data = await res.json();
+        if (!res.ok) {
+          closeDeleteModal();
+          showAlert('table-alert', 'error', data.error || 'Delete failed.');
+          return;
+        }
+        const deleted = deleteTargetId;
+        closeDeleteModal();
+        showAlert('table-alert', 'success', `Flight ${deleted} deleted from database.`);
+        loadFlights();
+      } catch {
+        showAlert('table-alert', 'error', 'Server error. Please try again.');
+        closeDeleteModal();
+      } finally {
+        btn.disabled = false;
+        btn.textContent = 'Delete';
+      }
+    }
+
+    // Close modals on backdrop click / Escape
+    ['edit-modal','delete-modal'].forEach(id => {
+      document.getElementById(id).addEventListener('click', e => {
+        if (e.target === e.currentTarget) {
+          id === 'edit-modal' ? closeEditModal() : closeDeleteModal();
+        }
+      });
+    });
+    document.addEventListener('keydown', e => {
+      if (e.key === 'Escape') { closeEditModal(); closeDeleteModal(); }
+    });
+
+    // ── Optimized routes ──────────────────────────────────────
+    async function loadOptimizedRoutes() {
+      try {
+        const res = await fetch(`${ADMIN_API}/routes/history?limit=50`);
+        const data = await res.json();
+        renderOptRoutes(data.routes || []);
+      } catch {
+        showAlert('opt-routes-alert', 'error', 'Could not load optimized routes.');
+      }
+    }
+
+    function renderOptRoutes(routes) {
+      const tbody = document.getElementById('opt-routes-tbody');
+      document.getElementById('opt-routes-count-badge').textContent = `${routes.length} rows`;
+
+      if (!routes.length) {
+        tbody.innerHTML = `<tr><td colspan="11"><div class="empty-state"><div class="empty-icon">&#128507;</div>No routes cached yet. Use the planner to generate routes.</div></td></tr>`;
+        return;
+      }
+
+      const TYPE_LABEL = { cheapest: 'Cheapest', fastest: 'Fastest', smart: 'Smart', min_layover: 'Min Layover' };
+      const TYPE_COLOR = { cheapest: '#10b981', fastest: '#3b82f6', smart: '#8b5cf6', min_layover: '#f59e0b' };
+
+      tbody.innerHTML = routes.map(r => {
+        const color = TYPE_COLOR[r.optimization_type] || '#6b7280';
+        const label = TYPE_LABEL[r.optimization_type] || r.optimization_type;
+        const h = Math.floor(r.total_duration_min / 60);
+        const m = r.total_duration_min % 60;
+        const computedAt = new Date(r.computed_at).toLocaleString();
+        const pathDisplay = r.path_codes.split(',').join(' > ');
+        return `<tr>
+          <td style="color:var(--muted);font-size:12px">#${r.route_id}</td>
+          <td><strong>${r.origin_code}</strong> <span style="color:var(--muted);font-size:11px">${r.origin_city}</span></td>
+          <td><strong>${r.destination_code}</strong> <span style="color:var(--muted);font-size:11px">${r.dest_city}</span></td>
+          <td><span style="background:${color}22;color:${color};border:1px solid ${color}44;border-radius:6px;padding:2px 8px;font-size:11px;font-weight:700">${label}</span></td>
+          <td style="font-size:12px;color:var(--muted);font-family:monospace">${pathDisplay}</td>
+          <td>${r.total_distance_km.toLocaleString()} km</td>
+          <td>${h}h ${m}m</td>
+          <td style="color:#10b981;font-weight:600">$${r.total_cost_usd.toLocaleString()}</td>
+          <td>${r.total_layover_min ? r.total_layover_min + ' min' : '—'}</td>
+          <td>${r.segment_count}</td>
+          <td style="color:var(--muted);font-size:12px">${computedAt}</td>
+        </tr>`;
+      }).join('');
+    }
+
+    // ── App ready (called by main.js after data loads) ────────
+    async function onAppReady() {
+      populateDropdowns();
+      const ok = await checkAuth();
+      if (!ok) return;
+      document.getElementById('auth-guard').style.display = 'none';
+      document.getElementById('admin-main').style.display = 'block';
+      loadFlights();
+      loadOptimizedRoutes();
+    }
+  </script>
+</body>
+</html>

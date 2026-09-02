@@ -1,135 +1,120 @@
 <!DOCTYPE html>
-<html lang="en" data-theme="light">
+<html lang="en" data-theme="dark">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Sign In – SkyRoute</title>
+  <title>Admin Login – SkyRoute</title>
   <link rel="stylesheet" href="css/style.css">
-  <style>
-    .float-plane:nth-child(1) { top:18%; left:8%;  animation-delay:0s;   animation-duration:3.5s; }
-    .float-plane:nth-child(2) { top:12%; left:78%; animation-delay:.6s;  animation-duration:4s; }
-    .float-plane:nth-child(3) { top:65%; left:12%; animation-delay:1.2s; animation-duration:4.5s; }
-    .float-plane:nth-child(4) { top:72%; left:75%; animation-delay:1.8s; animation-duration:3.8s; }
-    .float-plane:nth-child(5) { top:42%; left:50%; animation-delay:.4s;  animation-duration:5s; }
-  </style>
 </head>
 <body>
-  <script>
-    // Redirect if already logged in
-    try { if (JSON.parse(localStorage.getItem('skyroute_user'))) location.href='dashboard.html'; } catch(e){}
-  </script>
+  <div class="login-page">
+    <div class="login-card">
 
-  <div class="auth-page">
-    <!-- Left panel -->
-    <div class="auth-left">
-      <span class="float-plane">✈</span><span class="float-plane">✈</span>
-      <span class="float-plane">✈</span><span class="float-plane">✈</span>
-      <span class="float-plane">✈</span>
-      <div class="auth-left-content">
-        <div class="auth-left-icon">✈</div>
-        <h2 class="auth-left-title">Welcome Back</h2>
-        <p class="auth-left-sub">Log in to access your saved routes, travel preferences, and flight recommendations.</p>
-        <div class="auth-plane-orbit">✈</div>
+      <div class="login-brand">
+        <em>Sky</em><span>Route</span>
       </div>
-    </div>
+      <div class="login-sub">
+        Admin Portal · Secure Access
+      </div>
 
-    <!-- Right form -->
-    <div class="auth-right">
-      <div class="auth-form-wrap">
-        <div class="auth-brand-mobile">
-          <div class="brand-icon">✈</div>
-          Sky<span class="text-primary">Route</span>
+      <div class="login-msg" id="login-msg"></div>
+
+      <div class="form-group" style="margin-bottom:16px">
+        <label class="login-label">Username</label>
+        <input type="text" class="login-input" id="admin-username"
+          placeholder="admin" autocomplete="username">
+      </div>
+
+      <div class="form-group" style="margin-bottom:20px">
+        <label class="login-label">Password</label>
+        <div class="pass-wrap">
+          <input type="password" class="login-input" id="admin-password"
+            placeholder="••••••••" autocomplete="current-password" style="padding-right:44px">
+          <button class="pass-toggle" id="pass-toggle" type="button" onclick="togglePass()">👁</button>
         </div>
+      </div>
 
-        <h1 class="auth-title">Sign in to SkyRoute</h1>
-        <p class="auth-sub">Don't have an account? <a href="signup.html">Create one free</a></p>
+      <div class="login-err" id="login-err"></div>
 
-        <form class="auth-form" id="login-form" novalidate>
-          <div class="form-group">
-            <label class="form-label">Email address</label>
-            <div class="input-wrap">
-              <span class="input-icon">✉</span>
-              <input type="email" id="email" class="form-input has-icon" placeholder="you@example.com" autocomplete="email">
-            </div>
-            <span class="form-error" id="email-err">Please enter a valid email address.</span>
-          </div>
+      <button class="login-btn" id="admin-login-btn" onclick="adminLogin()">
+        Sign In
+      </button>
 
-          <div class="form-group">
-            <div class="label-row">
-              <label class="form-label">Password</label>
-              <span class="forgot-link" style="cursor:pointer">Forgot password?</span>
-            </div>
-            <div class="input-wrap">
-              <span class="input-icon">🔒</span>
-              <input type="password" id="password" class="form-input has-icon" placeholder="Enter your password" autocomplete="current-password" style="padding-right:42px">
-              <button type="button" class="pass-toggle" id="pass-toggle" title="Show/hide">👁</button>
-            </div>
-            <span class="form-error" id="pass-err">Password must be at least 6 characters.</span>
-          </div>
-
-          <div id="form-msg" style="display:none;padding:10px 14px;border-radius:var(--radius-sm);font-size:13px;font-weight:600"></div>
-
-          <button type="submit" class="btn btn-primary btn-full btn-lg" id="submit-btn">
-            Sign In →
-          </button>
-        </form>
-
-        <div class="auth-footer">
-          By signing in, you agree to our <a href="#">Terms</a> and <a href="#">Privacy Policy</a>.
-        </div>
+      <div style="text-align:center;margin-top:20px">
+        <a href="index.html" style="font-size:12px;color:var(--muted);transition:color var(--transition)"
+          onmouseover="this.style.color='var(--gold)'" onmouseout="this.style.color='var(--muted)'">
+          ← Back to SkyRoute
+        </a>
       </div>
     </div>
   </div>
 
-  <script src="js/data.js"></script>
-  <script src="js/dijkstra.js"></script>
-  <script src="js/main.js"></script>
   <script>
-    // Theme init
-    document.addEventListener('DOMContentLoaded', () => applyTheme(getTheme()));
+    const API = 'http://localhost:5000/api';
 
-    const form     = document.getElementById('login-form');
-    const emailEl  = document.getElementById('email');
-    const passEl   = document.getElementById('password');
-    const toggle   = document.getElementById('pass-toggle');
-    const submitBtn= document.getElementById('submit-btn');
-    const msg      = document.getElementById('form-msg');
+    document.documentElement.setAttribute('data-theme', 'dark');
 
-    toggle.addEventListener('click', () => {
-      const show = passEl.type === 'password';
-      passEl.type = show ? 'text' : 'password';
-      toggle.textContent = show ? '🙈' : '👁';
-    });
-
-    function showError(elId, show) {
-      const el = document.getElementById(elId);
-      if (show) el.classList.add('show'); else el.classList.remove('show');
+    if (localStorage.getItem('skyroute_admin_token')) {
+      window.location.href = 'admin.html';
     }
 
-    form.addEventListener('submit', e => {
-      e.preventDefault();
-      let valid = true;
-      const email = emailEl.value.trim();
-      const pass  = passEl.value;
+    function showMsg(type, msg) {
+      const el = document.getElementById('login-msg');
+      el.className = `login-msg ${type}`;
+      el.textContent = msg;
+    }
 
-      if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) { showError('email-err', true); valid = false; }
-      else showError('email-err', false);
+    function showErr(msg) {
+      document.getElementById('login-err').textContent = msg;
+    }
 
-      if (pass.length < 6) { showError('pass-err', true); valid = false; }
-      else showError('pass-err', false);
+    function togglePass() {
+      const inp = document.getElementById('admin-password');
+      inp.type  = inp.type === 'password' ? 'text' : 'password';
+    }
 
-      if (!valid) return;
+    async function adminLogin() {
+      const btn      = document.getElementById('admin-login-btn');
+      const username = document.getElementById('admin-username').value.trim();
+      const password = document.getElementById('admin-password').value;
 
-      submitBtn.disabled = true;
-      submitBtn.innerHTML = '<span class="spinner"></span> Signing in…';
+      document.getElementById('login-err').textContent = '';
+      document.getElementById('login-msg').className   = 'login-msg';
 
-      setTimeout(() => {
-        const namePart = email.split('@')[0];
-        const name = namePart.charAt(0).toUpperCase() + namePart.slice(1).replace(/[._-]/g,' ');
-        saveUser({ name, email });
-        window.location.href = 'dashboard.html';
-      }, 1200);
-    });
+      if (!username || !password) {
+        showErr('Please enter username and password.');
+        return;
+      }
+
+      btn.disabled  = true;
+      btn.innerHTML = '<span class="spinner"></span>';
+
+      try {
+        const res  = await fetch(`${API}/admin/auth/login`, {
+          method:  'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body:    JSON.stringify({ username, password }),
+        });
+        const data = await res.json();
+
+        if (!res.ok) {
+          showErr(data.error || 'Invalid credentials.');
+          return;
+        }
+
+        localStorage.setItem('skyroute_admin_token', data.token);
+        localStorage.setItem('skyroute_admin_user',  JSON.stringify(data.admin));
+        showMsg('success', 'Access granted. Redirecting…');
+        setTimeout(() => { window.location.href = 'admin.html'; }, 700);
+      } catch {
+        showErr('Could not reach backend. Make sure the server is running on port 5000.');
+      } finally {
+        btn.disabled  = false;
+        btn.innerHTML = 'Sign In';
+      }
+    }
+
+    document.addEventListener('keydown', e => { if (e.key === 'Enter') adminLogin(); });
   </script>
 </body>
 </html>

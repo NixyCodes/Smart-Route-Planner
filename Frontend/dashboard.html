@@ -1,14 +1,12 @@
 <!DOCTYPE html>
-<html lang="en" data-theme="light">
-
+<html lang="en" data-theme="dark">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Dashboard – SkyRoute</title>
+  <title>Route Planner – SkyRoute</title>
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
   <link rel="stylesheet" href="css/style.css">
 </head>
-
 <body class="page-wrapper">
   <script>window._activePage = 'dashboard.html';</script>
 
@@ -16,27 +14,25 @@
 
   <main>
     <div class="container dashboard">
+
       <!-- Header -->
       <div class="dash-header">
         <div class="section-tag">🗺 Route Planner</div>
-        <h1 class="dash-title">Find Your Optimal Flight Path</h1>
-        <p class="dash-sub">47 airports · 264 routes · Dijkstra's algorithm computes the optimal path instantly.</p>
-        <div class="stat-pills" style="margin-top:16px">
-          <div class="stat-pill"><span style="color:#0ea5e9">●</span><span class="stat-pill-value"
-              style="color:#0ea5e9">21</span><span style="font-size:12px;color:var(--muted)">Hubs</span></div>
-          <div class="stat-pill"><span style="color:#8b5cf6">●</span><span class="stat-pill-value"
-              style="color:#8b5cf6">8</span><span style="font-size:12px;color:var(--muted)">International</span></div>
-          <div class="stat-pill"><span style="color:#10b981">●</span><span class="stat-pill-value"
-              style="color:#10b981">18</span><span style="font-size:12px;color:var(--muted)">National / Domestic</span>
-          </div>
-          <div class="stat-pill"><span style="color:var(--muted)">⇌</span><span class="stat-pill-value">264</span><span
-              style="font-size:12px;color:var(--muted)">Segments</span></div>
+        <h1 class="dash-title">Intelligent Flight Route Optimizer</h1>
+        <p class="dash-sub">4 genuinely different optimization modes · 47 airports · 264 routes · Dijkstra's algorithm on live SQLite</p>
+        <div class="stat-pills" style="margin-top:14px">
+          <div class="stat-pill"><span style="color:#10b981">💰</span><span style="font-size:12px;color:var(--muted)">Cheapest Route</span></div>
+          <div class="stat-pill"><span style="color:#0ea5e9">⚡</span><span style="font-size:12px;color:var(--muted)">Fastest Arrival</span></div>
+          <div class="stat-pill"><span style="color:#8b5cf6">🧠</span><span style="font-size:12px;color:var(--muted)">Smart Route</span></div>
+          <div class="stat-pill"><span style="color:#f97316">🔁</span><span style="font-size:12px;color:var(--muted)">Min Layover</span></div>
         </div>
       </div>
 
       <div class="dash-layout">
-        <!-- Left column -->
+
+        <!-- ── Left column ──────────────────────────────────── -->
         <div>
+
           <!-- Search panel -->
           <div class="search-panel">
             <div class="airports-row">
@@ -49,7 +45,7 @@
                 <div style="font-size:11px;color:var(--muted);margin-top:4px" id="origin-info"></div>
               </div>
 
-              <div style="display:flex;align-items:flex-end;padding-bottom:22px">
+              <div style="display:flex;align-items:flex-end;padding-bottom:20px">
                 <button class="swap-btn" id="swap-btn" title="Swap airports">⇄</button>
               </div>
 
@@ -63,31 +59,41 @@
               </div>
             </div>
 
-            <div class="optimize-label">Optimise By</div>
+            <div class="optimize-label">Optimization Strategy</div>
             <div class="optimize-grid">
-              <button class="opt-btn active" data-opt="distance" id="opt-distance">
-                <span class="opt-btn-icon">📍</span>
-                <span>Shortest Distance</span>
-                <span class="opt-btn-desc">Minimise km</span>
+              <button class="opt-btn" data-opt="cheapest">
+                <span class="opt-btn-icon">💰</span>
+                <span>Cheapest Route</span>
+                <span class="opt-btn-desc">Minimize ticket cost</span>
               </button>
-              <button class="opt-btn" data-opt="time" id="opt-time">
-                <span class="opt-btn-icon">⏱</span>
-                <span>Fastest Time</span>
-                <span class="opt-btn-desc">Minimise hours</span>
+              <button class="opt-btn" data-opt="fastest">
+                <span class="opt-btn-icon">⚡</span>
+                <span>Fastest Arrival</span>
+                <span class="opt-btn-desc">Minimize total travel time</span>
               </button>
-              <button class="opt-btn" data-opt="cost" id="opt-cost">
-                <span class="opt-btn-icon">💵</span>
-                <span>Lowest Cost</span>
-                <span class="opt-btn-desc">Cheapest route</span>
+              <button class="opt-btn active" data-opt="smart">
+                <span class="opt-btn-icon">🧠</span>
+                <span>Smart Route</span>
+                <span class="opt-btn-desc">Balanced multi-factor score</span>
+              </button>
+              <button class="opt-btn" data-opt="min_layover">
+                <span class="opt-btn-icon">🔁</span>
+                <span>Min Layover</span>
+                <span class="opt-btn-desc">Fewest connections</span>
               </button>
             </div>
 
-            <button class="btn btn-primary btn-full btn-lg" id="search-btn">
-              ⚡ Find Optimal Route
-            </button>
-            <div id="same-error"
-              style="display:none;font-size:12px;color:var(--danger);text-align:center;margin-top:8px">Origin and
-              destination must be different airports.</div>
+            <div style="display:flex;gap:10px">
+              <button class="search-btn" id="search-btn" style="flex:1">
+                ⚡ Find Optimal Route
+              </button>
+              <button class="search-btn" id="compare-btn" title="Compare all 4 optimization modes" style="white-space:nowrap;background:transparent;color:var(--gold);border:1px solid var(--gold-border)">
+                ⚖ Compare All
+              </button>
+            </div>
+            <div id="same-error" style="display:none;font-size:12px;color:var(--danger);text-align:center;margin-top:8px">
+              Origin and destination must be different airports.
+            </div>
 
             <!-- Popular routes -->
             <div class="popular-label">Popular Routes</div>
@@ -96,9 +102,21 @@
 
           <!-- Results -->
           <div class="results-area" id="results-area"></div>
+
+          <!-- Comparison panel -->
+          <div id="compare-panel" style="display:none"></div>
+
+          <!-- Route history -->
+          <div class="history-panel" id="history-panel">
+            <div class="history-title">
+              🕘 Recent Searches
+              <span class="badge badge-muted" style="font-size:10px">from DB</span>
+            </div>
+            <div id="history-list"><div class="history-empty">No routes computed yet. Search above to get started.</div></div>
+          </div>
         </div>
 
-        <!-- Right column – Map -->
+        <!-- ── Right column – Map ───────────────────────────── -->
         <div>
           <div class="map-panel" style="position:sticky;top:80px">
             <div class="map-header">
@@ -109,29 +127,88 @@
             <div class="map-footer" id="map-footer">Click any airport marker for details · Scroll to zoom</div>
           </div>
         </div>
+
       </div>
+
+      <!-- Search Log Table -->
+      <div style="margin-top:36px;margin-bottom:8px">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;flex-wrap:wrap;gap:10px">
+          <div style="display:flex;align-items:center;gap:10px">
+            <span style="font-size:15px;font-weight:700;letter-spacing:-.01em">Route Search Log</span>
+            <span id="search-log-count" style="background:var(--bg-2);border:1px solid var(--border);border-radius:99px;padding:2px 10px;font-size:11px;color:var(--muted)">0 entries</span>
+          </div>
+          <button onclick="loadSearchLog()" style="padding:6px 14px;background:var(--bg-2);border:1px solid var(--border);border-radius:8px;color:var(--muted);font-size:12px;cursor:pointer">Refresh</button>
+        </div>
+        <div style="overflow-x:auto;border:1px solid var(--border);border-radius:12px;background:var(--card)">
+          <table style="width:100%;border-collapse:collapse;font-size:13px;min-width:700px">
+            <thead>
+              <tr style="border-bottom:1px solid var(--border)">
+                <th style="padding:10px 14px;text-align:left;font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.04em;white-space:nowrap">#</th>
+                <th style="padding:10px 14px;text-align:left;font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.04em;white-space:nowrap">Origin</th>
+                <th style="padding:10px 14px;text-align:left;font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.04em;white-space:nowrap">Destination</th>
+                <th style="padding:10px 14px;text-align:left;font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.04em;white-space:nowrap">Mode</th>
+                <th style="padding:10px 14px;text-align:left;font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.04em;white-space:nowrap">Path</th>
+                <th style="padding:10px 14px;text-align:left;font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.04em;white-space:nowrap">Cost</th>
+                <th style="padding:10px 14px;text-align:left;font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.04em;white-space:nowrap">Duration</th>
+                <th style="padding:10px 14px;text-align:left;font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.04em;white-space:nowrap">Distance</th>
+                <th style="padding:10px 14px;text-align:left;font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.04em;white-space:nowrap">Searched At</th>
+              </tr>
+            </thead>
+            <tbody id="search-log-tbody">
+              <tr><td colspan="9" style="padding:40px;text-align:center;color:var(--muted);font-size:13px">No searches yet. Use the optimizer above to generate routes.</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
     </div>
   </main>
 
   <div id="footer-container"></div>
 
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-  <script src="js/data.js"></script>
   <script src="js/dijkstra.js"></script>
   <script src="js/main.js"></script>
-  <script>
-    // ── State ────────────────────────────────────────────────────
-    let currentSource = 'JFK';
-    let currentDest = 'SIN';
-    let currentOpt = 'distance';
-    let currentResult = null;
 
-    // ── Populate selects ─────────────────────────────────────────
+  <script>
+    const POPULAR_ROUTES = [
+      { from:'DEL', to:'BLR',  label:'Delhi → Bangalore',     tag:'National'      },
+      { from:'JFK', to:'SIN',  label:'New York → Singapore',  tag:'International' },
+      { from:'LHR', to:'EDI',  label:'London → Edinburgh',    tag:'National'      },
+      { from:'SYD', to:'MEL',  label:'Sydney → Melbourne',    tag:'National'      },
+      { from:'BOM', to:'MAA',  label:'Mumbai → Chennai',      tag:'National'      },
+      { from:'ATL', to:'LAX',  label:'Atlanta → LA',          tag:'Domestic'      },
+      { from:'HKG', to:'LHR',  label:'Hong Kong → London',   tag:'International' },
+      { from:'DOH', to:'NRT',  label:'Doha → Tokyo',          tag:'International' },
+    ];
+
+    const MODE_INFO = {
+      cheapest:    { label:'Cheapest Route',  icon:'💰', color:'#10b981', badge:'badge-success' },
+      fastest:     { label:'Fastest Arrival', icon:'⚡', color:'#0ea5e9', badge:'badge-primary' },
+      smart:       { label:'Smart Route',     icon:'🧠', color:'#8b5cf6', badge:'badge-purple'  },
+      min_layover: { label:'Min Layover',     icon:'🔁', color:'#f97316', badge:'badge-orange'  },
+    };
+
+    // ── State ─────────────────────────────────────────────────
+    let currentSource  = 'JFK';
+    let currentDest    = 'SIN';
+    let currentOpt     = 'smart';
+    let currentResult  = null;
+    let compareResults = null;
+
+    // ── Called by main.js after data is loaded ────────────────
+    function onAppReady() {
+      populateSelects();
+      renderPopular();
+      updateMap();
+      loadHistory();
+      loadSearchLog();
+    }
+
+    // ── Selects ───────────────────────────────────────────────
     function populateSelects() {
-      const originSel = document.getElementById('origin-select');
-      const destSel = document.getElementById('dest-select');
-      originSel.innerHTML = buildAirportOptions(currentSource);
-      destSel.innerHTML = buildAirportOptions(currentDest);
+      document.getElementById('origin-select').innerHTML = buildAirportOptions(currentSource);
+      document.getElementById('dest-select').innerHTML   = buildAirportOptions(currentDest);
       updateAirportInfo();
     }
 
@@ -139,10 +216,10 @@
       const o = AIRPORT_MAP[currentSource];
       const d = AIRPORT_MAP[currentDest];
       if (o) document.getElementById('origin-info').textContent = o.airport;
-      if (d) document.getElementById('dest-info').textContent = d.airport;
+      if (d) document.getElementById('dest-info').textContent   = d.airport;
     }
 
-    // ── Optimise buttons ─────────────────────────────────────────
+    // ── Mode buttons ──────────────────────────────────────────
     document.querySelectorAll('.opt-btn').forEach(btn => {
       btn.addEventListener('click', () => {
         document.querySelectorAll('.opt-btn').forEach(b => b.classList.remove('active'));
@@ -152,153 +229,197 @@
       });
     });
 
-    // ── Select change ────────────────────────────────────────────
+    // ── Select change ─────────────────────────────────────────
     document.addEventListener('change', e => {
       if (e.target.id === 'origin-select') { currentSource = e.target.value; updateAirportInfo(); clearResults(); }
-      if (e.target.id === 'dest-select') { currentDest = e.target.value; updateAirportInfo(); clearResults(); }
+      if (e.target.id === 'dest-select')   { currentDest   = e.target.value; updateAirportInfo(); clearResults(); }
     });
 
-    // ── Swap ─────────────────────────────────────────────────────
+    // ── Swap ──────────────────────────────────────────────────
     document.getElementById('swap-btn').addEventListener('click', () => {
       [currentSource, currentDest] = [currentDest, currentSource];
       document.getElementById('origin-select').innerHTML = buildAirportOptions(currentSource);
-      document.getElementById('dest-select').innerHTML = buildAirportOptions(currentDest);
+      document.getElementById('dest-select').innerHTML   = buildAirportOptions(currentDest);
       updateAirportInfo();
       clearResults();
     });
 
-    // ── Popular routes ───────────────────────────────────────────
+    // ── Popular routes ────────────────────────────────────────
     function renderPopular() {
       const container = document.getElementById('popular-routes');
       container.innerHTML = POPULAR_ROUTES.map(r => {
-        const tagClass = (r.tag === 'National' || r.tag === 'Domestic') ? 'badge-success' : 'badge-purple';
+        const tagCls = (r.tag === 'National' || r.tag === 'Domestic') ? 'badge-success' : 'badge-purple';
         return `<button class="route-chip" data-from="${r.from}" data-to="${r.to}">
-          ✈ ${r.label} <span class="badge ${tagClass}">${r.tag}</span>
+          ✈ ${r.label} <span class="badge ${tagCls}">${r.tag}</span>
         </button>`;
       }).join('');
-
       container.querySelectorAll('.route-chip').forEach(btn => {
         btn.addEventListener('click', () => {
           currentSource = btn.dataset.from;
-          currentDest = btn.dataset.to;
+          currentDest   = btn.dataset.to;
           document.getElementById('origin-select').innerHTML = buildAirportOptions(currentSource);
-          document.getElementById('dest-select').innerHTML = buildAirportOptions(currentDest);
+          document.getElementById('dest-select').innerHTML   = buildAirportOptions(currentDest);
           updateAirportInfo();
           clearResults();
         });
       });
     }
 
-    // ── Search ───────────────────────────────────────────────────
+    // ── Search ────────────────────────────────────────────────
     document.getElementById('search-btn').addEventListener('click', doSearch);
 
     async function doSearch() {
-
       const sameErr = document.getElementById('same-error');
-
-      if (currentSource === currentDest) {
-
-        sameErr.style.display = 'block';
-
-        return;
-      }
-
+      if (currentSource === currentDest) { sameErr.style.display = 'block'; return; }
       sameErr.style.display = 'none';
 
       const btn = document.getElementById('search-btn');
-
       btn.disabled = true;
-
-      btn.innerHTML = '<span class="spinner"></span> Computing optimal route…';
+      btn.innerHTML = '<span class="spinner"></span> Computing route…';
 
       document.getElementById('results-area').innerHTML = `
-    <div class="loading-state">
-      <div class="loading-ring"></div>
-      <div class="loading-text">
-        Running Dijkstra's algorithm across the flight graph…
-      </div>
-    </div>`;
+        <div class="loading-state">
+          <div class="loading-ring"></div>
+          <div class="loading-text">Running Dijkstra's algorithm (${MODE_INFO[currentOpt]?.label || currentOpt} mode)…</div>
+        </div>`;
 
       setTimeout(async () => {
-
         try {
-
-          const response = await fetch('http://localhost:5000/shortest-path', {
-
+          const res  = await fetch(`${API}/shortest-path`, {
             method: 'POST',
-
-            headers: {
-              'Content-Type': 'application/json'
-            },
-
-            body: JSON.stringify({
-              source: currentSource,
-              destination: currentDest,
-              optimizeBy: currentOpt
-            })
-
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ source: currentSource, destination: currentDest, optimizeBy: currentOpt }),
           });
-
-          const data = await response.json();
-
+          const data = await res.json();
           currentResult = data;
-
-          renderResults(currentResult);
-
+          renderResults(data);
           updateMap();
-
-        } catch (error) {
-
-          console.error(error);
-
-          alert('Failed to fetch route from backend');
-
+          loadHistory();
+          loadSearchLog();
+        } catch (err) {
+          document.getElementById('results-area').innerHTML = `
+            <div class="card" style="margin-top:16px;text-align:center;padding:32px">
+              <div style="font-size:22px;margin-bottom:8px">⚠</div>
+              <div style="font-weight:700;margin-bottom:4px">Could not reach the backend</div>
+              <div style="font-size:13px;color:var(--muted)">Make sure the server is running on port 5000.</div>
+            </div>`;
         } finally {
-
           btn.disabled = false;
-
           btn.innerHTML = '⚡ Find Optimal Route';
         }
+      }, 400);
+    }
 
-      }, 600);
-    };
+    // ── Compare ───────────────────────────────────────────────
+    document.getElementById('compare-btn').addEventListener('click', doCompare);
+
+    async function doCompare() {
+      const sameErr = document.getElementById('same-error');
+      if (currentSource === currentDest) { sameErr.style.display = 'block'; return; }
+      sameErr.style.display = 'none';
+
+      const btn = document.getElementById('compare-btn');
+      btn.disabled = true;
+      btn.innerHTML = '⟳ Comparing…';
+
+      document.getElementById('compare-panel').style.display = 'block';
+      document.getElementById('compare-panel').innerHTML = `
+        <div class="compare-section">
+          <div class="loading-state" style="padding:32px">
+            <div class="loading-ring"></div>
+            <div class="loading-text">Computing all 4 optimization strategies…</div>
+          </div>
+        </div>`;
+
+      try {
+        const res  = await fetch(`${API}/compare`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ source: currentSource, destination: currentDest }),
+        });
+        const data = await res.json();
+        compareResults = data.comparison;
+        renderComparison(compareResults);
+        loadSearchLog();
+        loadHistory();
+      } catch (err) {
+        document.getElementById('compare-panel').innerHTML = `
+          <div class="compare-section">
+            <div style="text-align:center;padding:24px;color:var(--muted);font-size:13px">⚠ Could not reach backend on port 5000.</div>
+          </div>`;
+      } finally {
+        btn.disabled = false;
+        btn.innerHTML = '⚖ Compare All';
+      }
+    }
+
     function clearResults() {
-
-      currentResult = null;
-
+      currentResult  = null;
+      compareResults = null;
       document.getElementById('results-area').innerHTML = '';
-
+      document.getElementById('compare-panel').style.display = 'none';
+      document.getElementById('compare-panel').innerHTML = '';
       document.getElementById('same-error').style.display = 'none';
-
       updateMap();
-    };
+    }
 
-    // ── Render results ───────────────────────────────────────────
+    // ── Render single result ──────────────────────────────────
     function renderResults(result) {
       const area = document.getElementById('results-area');
+
       if (!result.found) {
-        area.innerHTML = `<div class="card" style="margin-top:16px;text-align:center;padding:36px">
-          <div class="no-route-icon">✈</div>
-          <div style="font-weight:700;font-size:15px;margin-bottom:6px">No Route Found</div>
-          <div style="font-size:13px;color:var(--muted)">There's no connected path between ${currentSource} and ${currentDest} in the current network.</div>
-        </div>`;
+        area.innerHTML = `
+          <div class="card" style="margin-top:16px">
+            <div class="no-route">
+              <div class="no-route-icon">✈</div>
+              <div style="font-weight:700;font-size:15px;margin-bottom:6px">No Route Found</div>
+              <div style="font-size:13px;color:var(--muted)">No connected path exists between <strong>${currentSource}</strong> and <strong>${currentDest}</strong>.</div>
+            </div>
+          </div>`;
         return;
       }
 
+      const mode     = result.mode || currentOpt;
+      const modeInfo = MODE_INFO[mode] || MODE_INFO.smart;
       const segCount = result.steps.length;
-      const stepsHTML = result.steps.map((step, i) => `
-        <div class="segment-row">
-          <div class="segment-num">${i + 1}</div>
-          <div class="segment-info">
-            <div class="segment-route">${step.fromName} → ${step.toName}</div>
-            <div class="segment-meta">✈ ${step.airline} · ${step.aircraft}</div>
-          </div>
-          <div class="segment-stats">
-            <div class="seg-stat"><div class="seg-stat-val">${step.distance.toLocaleString()} km</div><div class="seg-stat-lbl">dist</div></div>
-            <div class="seg-stat"><div class="seg-stat-val">${formatTime(step.time)}</div><div class="seg-stat-lbl">time</div></div>
-            <div class="seg-stat"><div class="seg-stat-val">$${step.cost.toLocaleString()}</div><div class="seg-stat-lbl">cost</div></div>
-          </div>
-        </div>`).join('');
+      const totalElapsed = result.totalTime + (result.totalLayover || 0);
+      const stopsText = result.stops === 0 ? 'Direct' : `${result.stops} stop${result.stops !== 1 ? 's' : ''}`;
+
+      const stepsHTML = result.steps.map((step, i) => {
+        const stars = '★'.repeat(Math.round(step.airlineRating || 3)) + '☆'.repeat(5 - Math.round(step.airlineRating || 3));
+        const delayPct = step.delayProb != null ? `${(step.delayProb * 100).toFixed(0)}%` : '—';
+
+        const layoverHTML = (i > 0 && step.layoverMin > 0) ? `
+          <div class="layover-row">
+            <div class="layover-line"></div>
+            <span class="layover-tag">⏳ ${formatTime(step.layoverMin)} layover at ${step.from} (est.)</span>
+            <div class="layover-line"></div>
+          </div>` : '';
+
+        return `
+          ${layoverHTML}
+          <div class="segment-row">
+            <div class="segment-dot" style="border-color:${modeInfo.color};color:${modeInfo.color};background:${modeInfo.color}18">${i + 1}</div>
+            <div class="segment-body">
+              <div class="segment-route">${step.fromName} <span style="color:${modeInfo.color}">→</span> ${step.toName}</div>
+              <div class="segment-meta">
+                <span>✈ ${step.airline}</span>
+                <span class="meta-dot">·</span>
+                <span>${step.aircraft}</span>
+                <span class="meta-dot">·</span>
+                <span class="rating-inline" title="Airline rating">${stars} <span style="font-size:10px;color:var(--muted)">${step.airlineRating}</span></span>
+                <span class="meta-dot">·</span>
+                <span class="delay-inline" title="Delay risk">${delayPct} delay risk</span>
+              </div>
+              <div class="segment-stats">
+                <span class="seg-stat"><span class="seg-stat-val">${step.distance.toLocaleString()} km</span><span class="seg-stat-lbl">dist</span></span>
+                <span class="seg-stat"><span class="seg-stat-val">${formatTime(step.time)}</span><span class="seg-stat-lbl">flight</span></span>
+                <span class="seg-stat"><span class="seg-stat-val">$${step.cost.toLocaleString()}</span><span class="seg-stat-lbl">cost</span></span>
+                <span class="seg-stat"><span class="seg-stat-val">${step.emissionsFactor ?? '—'} kg/100km</span><span class="seg-stat-lbl">CO₂</span></span>
+              </div>
+            </div>
+          </div>`;
+      }).join('');
 
       const nodesHTML = result.path.map((id, i) => {
         const cls = i === 0 ? 'origin' : i === result.path.length - 1 ? 'dest' : '';
@@ -306,30 +427,58 @@
       }).join('');
 
       area.innerHTML = `
-        <div style="margin-top:16px;display:flex;flex-direction:column;gap:12px">
-          <div class="stat-cards">
-            <div class="stat-card">
-              <div class="stat-icon">📍</div>
-              <div class="stat-value">${result.totalDistance.toLocaleString()} km</div>
-              <div class="stat-label">Total Distance</div>
-            </div>
-            <div class="stat-card">
-              <div class="stat-icon">⏱</div>
-              <div class="stat-value">${formatTime(result.totalTime)}</div>
-              <div class="stat-label">Total Time</div>
-            </div>
-            <div class="stat-card">
-              <div class="stat-icon">💵</div>
-              <div class="stat-value">$${result.totalCost.toLocaleString()}</div>
-              <div class="stat-label">Total Cost</div>
+        <div style="margin-top:16px;display:flex;flex-direction:column;gap:14px">
+
+          <!-- Mode badge -->
+          <div style="display:flex;align-items:center;gap:10px;padding:10px 14px;background:${modeInfo.color}14;border:1px solid ${modeInfo.color}40;border-radius:10px">
+            <span style="font-size:20px">${modeInfo.icon}</span>
+            <div>
+              <div style="font-weight:700;font-size:13px;color:${modeInfo.color}">${modeInfo.label}</div>
+              <div style="font-size:11px;color:var(--muted)">Optimized via Dijkstra's weighted graph · results cached in SQLite</div>
             </div>
           </div>
 
+          <!-- Summary stats -->
+          <div class="stat-cards result-stat-cards">
+            <div class="stat-card" style="border-top-color:#10b981">
+              <div class="stat-icon">💰</div>
+              <div class="stat-value">$${result.totalCost.toLocaleString()}</div>
+              <div class="stat-label">Total Cost</div>
+            </div>
+            <div class="stat-card" style="border-top-color:#0ea5e9">
+              <div class="stat-icon">✈</div>
+              <div class="stat-value">${formatTime(result.totalTime)}</div>
+              <div class="stat-label">Flight Time</div>
+            </div>
+            <div class="stat-card" style="border-top-color:#8b5cf6">
+              <div class="stat-icon">⏱</div>
+              <div class="stat-value">${formatTime(totalElapsed)}</div>
+              <div class="stat-label">Total (w/ Layover)</div>
+            </div>
+            <div class="stat-card" style="border-top-color:#f97316">
+              <div class="stat-icon">🔁</div>
+              <div class="stat-value">${stopsText}</div>
+              <div class="stat-label">Connections</div>
+            </div>
+            <div class="stat-card" style="border-top-color:#06b6d4">
+              <div class="stat-icon">★</div>
+              <div class="stat-value">${result.avgRating ?? '—'}</div>
+              <div class="stat-label">Avg Airline Rating</div>
+            </div>
+            <div class="stat-card" style="border-top-color:#6366f1">
+              <div class="stat-icon">🌱</div>
+              <div class="stat-value">${result.totalEmissions ?? '—'} kg</div>
+              <div class="stat-label">Est. CO₂ / pax</div>
+            </div>
+          </div>
+
+          <!-- Route path + timeline -->
           <div class="route-path-card">
             <div class="route-path-header">
               <span style="font-size:18px">🛣</span>
-              <span class="route-path-title">Optimal Route</span>
-              <span class="badge badge-primary">${segCount} segment${segCount > 1 ? 's' : ''}</span>
+              <span class="route-path-title">Route Detail</span>
+              <span class="badge" style="background:${modeInfo.color}18;color:${modeInfo.color};border:1px solid ${modeInfo.color}40">${segCount} segment${segCount !== 1 ? 's' : ''}</span>
+              <span class="badge badge-muted">${modeInfo.label}</span>
             </div>
             <div class="route-path-nodes">${nodesHTML}</div>
             <div class="segment-list">${stepsHTML}</div>
@@ -337,29 +486,193 @@
         </div>`;
     }
 
-    // ── Map update ───────────────────────────────────────────────
+    // ── Render comparison panel ───────────────────────────────
+    function renderComparison(comp) {
+      const panel  = document.getElementById('compare-panel');
+      const modes  = ['cheapest', 'fastest', 'smart', 'min_layover'];
+      const found  = modes.filter(m => comp[m]?.found);
+
+      if (found.length === 0) {
+        panel.innerHTML = `<div class="compare-section"><div style="text-align:center;padding:24px;color:var(--muted)">No routes found.</div></div>`;
+        return;
+      }
+
+      const minCost   = Math.min(...found.map(m => comp[m].totalCost));
+      const minFlTime = Math.min(...found.map(m => comp[m].totalTime));
+      const minTotal  = Math.min(...found.map(m => comp[m].totalTime + (comp[m].totalLayover || 0)));
+      const maxRating = Math.max(...found.map(m => comp[m].avgRating));
+      const minStops  = Math.min(...found.map(m => comp[m].stops));
+      const minEmit   = Math.min(...found.map(m => comp[m].totalEmissions));
+
+      const cards = modes.map(mode => {
+        const r = comp[mode];
+        if (!r?.found) {
+          return `<div class="compare-card compare-${mode}">
+            <div class="compare-card-hd" style="background:${MODE_INFO[mode].color}">${MODE_INFO[mode].icon} ${MODE_INFO[mode].label}</div>
+            <div style="padding:20px;text-align:center;color:var(--muted);font-size:13px">No route found</div>
+          </div>`;
+        }
+
+        const totalElapsed = r.totalTime + (r.totalLayover || 0);
+        const stopsText    = r.stops === 0 ? 'Direct' : `${r.stops} stop${r.stops !== 1 ? 's' : ''}`;
+        const badge        = v => `<span class="winner-badge">🏆</span>`;
+
+        return `
+          <div class="compare-card compare-${mode}" onclick="loadCompareMode('${mode}')">
+            <div class="compare-card-hd" style="background:${MODE_INFO[mode].color}">
+              ${MODE_INFO[mode].icon} ${MODE_INFO[mode].label}
+            </div>
+            <div class="compare-card-body">
+              <div class="compare-route-path">${r.path.join(' → ')}</div>
+              <div class="compare-metrics">
+                <div class="metric-row">
+                  <span class="metric-lbl">Total Cost</span>
+                  <span class="metric-val ${r.totalCost === minCost ? 'metric-winner' : ''}">$${r.totalCost.toLocaleString()} ${r.totalCost === minCost ? badge() : ''}</span>
+                </div>
+                <div class="metric-row">
+                  <span class="metric-lbl">Flight Time</span>
+                  <span class="metric-val ${r.totalTime === minFlTime ? 'metric-winner' : ''}">${formatTime(r.totalTime)} ${r.totalTime === minFlTime ? badge() : ''}</span>
+                </div>
+                <div class="metric-row">
+                  <span class="metric-lbl">Total (w/ Layover)</span>
+                  <span class="metric-val ${totalElapsed === minTotal ? 'metric-winner' : ''}">${formatTime(totalElapsed)} ${totalElapsed === minTotal ? badge() : ''}</span>
+                </div>
+                <div class="metric-row">
+                  <span class="metric-lbl">Connections</span>
+                  <span class="metric-val ${r.stops === minStops ? 'metric-winner' : ''}">${stopsText} ${r.stops === minStops ? badge() : ''}</span>
+                </div>
+                <div class="metric-row">
+                  <span class="metric-lbl">Avg Airline Rating</span>
+                  <span class="metric-val ${r.avgRating === maxRating ? 'metric-winner' : ''}">★ ${r.avgRating} ${r.avgRating === maxRating ? badge() : ''}</span>
+                </div>
+                <div class="metric-row">
+                  <span class="metric-lbl">CO₂ / pax (est.)</span>
+                  <span class="metric-val ${r.totalEmissions === minEmit ? 'metric-winner' : ''}">${r.totalEmissions} kg ${r.totalEmissions === minEmit ? '<span class="winner-badge">🌿</span>' : ''}</span>
+                </div>
+              </div>
+              <button class="compare-view-btn" style="border-color:${MODE_INFO[mode].color};color:${MODE_INFO[mode].color}" onclick="event.stopPropagation();loadCompareMode('${mode}')">
+                View Full Route →
+              </button>
+            </div>
+          </div>`;
+      }).join('');
+
+      panel.innerHTML = `
+        <div class="compare-section">
+          <div class="compare-header">
+            <div class="compare-title">⚖ Route Comparison</div>
+            <div style="font-size:12px;color:var(--muted)">${currentSource} → ${currentDest} · ${found.length} modes computed · 🏆 best in category</div>
+          </div>
+          <div class="compare-grid">${cards}</div>
+          <div style="font-size:11px;color:var(--muted);text-align:center;margin-top:12px">Click any card or "View Full Route" to load that route on the map</div>
+        </div>`;
+    }
+
+    function loadCompareMode(mode) {
+      if (!compareResults || !compareResults[mode]?.found) return;
+      currentOpt    = mode;
+      currentResult = compareResults[mode];
+      document.querySelectorAll('.opt-btn').forEach(b => b.classList.toggle('active', b.dataset.opt === mode));
+      renderResults(currentResult);
+      updateMap();
+    }
+
+    // ── Map update ────────────────────────────────────────────
     function updateMap() {
       initMap('map-container', currentResult, currentSource, currentDest);
       const status = document.getElementById('map-status');
       const footer = document.getElementById('map-footer');
       if (currentResult?.found) {
         status.textContent = 'Route active';
-        status.className = 'badge badge-success';
+        status.className   = 'badge badge-success';
         footer.textContent = `Route: ${currentResult.path.join(' → ')} · Click markers for details`;
       } else {
         status.textContent = 'All airports shown';
-        status.className = 'badge badge-muted';
+        status.className   = 'badge badge-muted';
         footer.textContent = 'Search a route to highlight it · Click airport markers for details';
       }
     }
 
-    // ── Init ─────────────────────────────────────────────────────
-    document.addEventListener('DOMContentLoaded', () => {
-      populateSelects();
-      renderPopular();
-      updateMap();
-    });
+    // ── Route history ─────────────────────────────────────────
+    async function loadHistory() {
+      try {
+        const res  = await fetch(`${API}/routes/history?limit=8`);
+        const data = await res.json();
+        renderHistory(data.routes);
+      } catch (e) { /* silently ignore */ }
+    }
+
+    function renderHistory(routes) {
+      const list = document.getElementById('history-list');
+      if (!routes || routes.length === 0) {
+        list.innerHTML = '<div class="history-empty">No routes computed yet.</div>';
+        return;
+      }
+      list.innerHTML = '<div class="history-list">' + routes.map(r => {
+        const info = MODE_INFO[r.optimization_type] || { icon:'✈', label: r.optimization_type, color:'var(--muted)' };
+        return `
+          <div class="history-item" onclick="loadHistoryRoute('${r.origin_code}','${r.destination_code}','${r.optimization_type}')">
+            <span style="font-size:16px">${info.icon}</span>
+            <div style="flex:1;min-width:0">
+              <div class="history-route">${r.origin_city} → ${r.dest_city}</div>
+              <div class="history-meta">${r.origin_code} → ${r.destination_code} · ${r.segment_count} leg${r.segment_count !== 1 ? 's' : ''} · $${r.total_cost_usd.toLocaleString()}</div>
+            </div>
+            <span class="badge" style="background:${info.color}18;color:${info.color};border:1px solid ${info.color}40;flex-shrink:0;font-size:10px">${info.label}</span>
+          </div>`;
+      }).join('') + '</div>';
+    }
+
+    // ── Search log table ──────────────────────────────────────
+    async function loadSearchLog() {
+      try {
+        const res  = await fetch(`${API}/search-log?limit=100`);
+        const data = await res.json();
+        renderSearchLog(data.logs || []);
+      } catch (e) { /* silently ignore */ }
+    }
+
+    function renderSearchLog(logs) {
+      const tbody = document.getElementById('search-log-tbody');
+      const count = document.getElementById('search-log-count');
+      count.textContent = `${logs.length} entr${logs.length === 1 ? 'y' : 'ies'}`;
+
+      if (!logs.length) {
+        tbody.innerHTML = `<tr><td colspan="9" style="padding:40px;text-align:center;color:var(--muted);font-size:13px">No searches yet. Use the optimizer above to generate routes.</td></tr>`;
+        return;
+      }
+
+      tbody.innerHTML = logs.map((r, i) => {
+        const info  = MODE_INFO[r.optimization_type] || { icon:'', label: r.optimization_type, color:'#6b7280' };
+        const h     = Math.floor(r.total_duration_min / 60);
+        const m     = r.total_duration_min % 60;
+        const path  = r.path_codes.split(',').join(' > ');
+        const when  = new Date(r.searched_at).toLocaleString();
+        const rowBg = i % 2 === 0 ? '' : 'background:var(--bg-2)';
+        return `<tr style="${rowBg}">
+          <td style="padding:10px 14px;color:var(--muted);font-size:12px">${r.log_id}</td>
+          <td style="padding:10px 14px"><strong>${r.origin_code}</strong> <span style="color:var(--muted);font-size:11px">${r.origin_city}</span></td>
+          <td style="padding:10px 14px"><strong>${r.destination_code}</strong> <span style="color:var(--muted);font-size:11px">${r.dest_city}</span></td>
+          <td style="padding:10px 14px"><span style="background:${info.color}18;color:${info.color};border:1px solid ${info.color}40;border-radius:6px;padding:2px 8px;font-size:11px;font-weight:700;white-space:nowrap">${info.icon} ${info.label}</span></td>
+          <td style="padding:10px 14px;font-size:12px;color:var(--muted);font-family:monospace">${path}</td>
+          <td style="padding:10px 14px;color:#10b981;font-weight:600">$${r.total_cost_usd.toLocaleString()}</td>
+          <td style="padding:10px 14px">${h}h ${m}m</td>
+          <td style="padding:10px 14px;color:var(--muted)">${r.total_distance_km.toLocaleString()} km</td>
+          <td style="padding:10px 14px;color:var(--muted);font-size:12px">${when}</td>
+        </tr>`;
+      }).join('');
+    }
+
+    function loadHistoryRoute(from, to, mode) {
+      currentSource = from;
+      currentDest   = to;
+      currentOpt    = MODE_INFO[mode] ? mode : 'smart';
+      document.getElementById('origin-select').innerHTML = buildAirportOptions(from);
+      document.getElementById('dest-select').innerHTML   = buildAirportOptions(to);
+      document.querySelectorAll('.opt-btn').forEach(b => b.classList.toggle('active', b.dataset.opt === currentOpt));
+      updateAirportInfo();
+      clearResults();
+      doSearch();
+    }
   </script>
 </body>
-
 </html>

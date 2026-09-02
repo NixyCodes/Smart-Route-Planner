@@ -1,170 +1,318 @@
 <!DOCTYPE html>
-<html lang="en" data-theme="light">
+<html lang="en" data-theme="dark">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>SkyRoute – Smart Flight Route Planner</title>
+  <title>SkyRoute – Cinematic Flight Route Planner</title>
   <link rel="stylesheet" href="css/style.css">
 </head>
-<body class="page-wrapper">
-  <script>window._activePage='index.html';</script>
+<body>
+  <script>window._activePage = 'index.html';</script>
+
+  <!-- Splash Screen -->
+  <div id="splash">
+    <canvas id="splash-canvas"></canvas>
+    <div class="splash-content">
+      <img src="logo.png" alt="SkyRoute" class="splash-plane">
+      <div class="splash-logo"><em>Sky</em><span>Route</span></div>
+      <div class="splash-tagline">Intelligent Flight Routing</div>
+      <div class="splash-bar"></div>
+    </div>
+    <div class="splash-hint">Click to enter</div>
+  </div>
 
   <div id="navbar-container"></div>
 
-  <main>
-    <!-- Hero -->
-    <section class="hero">
-      <div class="hero-bg"></div>
-      <div class="container hero-content">
-        <div class="hero-tag">✈ Powered by Dijkstra's Algorithm</div>
-        <h1 class="hero-title">
-          Plan Smarter<br><span class="text-primary">Flight Routes</span>
-        </h1>
-        <p class="hero-sub">
-          Find the optimal path between any of our 47 global airports across 7 regions —
-          optimise by distance, time, or cost.
-        </p>
-        <div class="hero-actions">
-          <a href="dashboard.html" class="btn btn-primary btn-lg">🗺 Start Planning</a>
-          <a href="signup.html" class="btn btn-outline btn-lg">Create Free Account</a>
-        </div>
+  <!-- Hero -->
+  <section class="hero">
+    <div class="hero-video-wrap">
+      <video autoplay muted loop playsinline>
+        <source src="video/hero.mp4" type="video/mp4">
+      </video>
+    </div>
+    <div class="hero-overlay"></div>
+    <canvas class="hero-particles" id="hero-canvas"></canvas>
+    <div class="hero-content">
+      <div class="hero-eyebrow">Dijkstra's Algorithm · SQLite DBMS · 47 Airports</div>
+      <h1 class="hero-title">
+        Navigate the<br><em>World's Skies</em>
+      </h1>
+      <p class="hero-sub">
+        Find optimal flight routes across 264 connections in 7 global regions.
+        Four distinct optimisation modes, powered by a real SQL database.
+      </p>
+      <div class="hero-actions">
+        <a href="dashboard.html" class="btn-primary">Plan Your Route ✈</a>
+        <a href="#network" class="btn-outline">Explore Network</a>
+      </div>
+    </div>
+    <div class="hero-scroll">
+      <span>Scroll</span>
+      <div class="scroll-line"></div>
+    </div>
+  </section>
 
-        <div class="hero-visual">
-          <div class="hero-card">
-            <div class="hero-route-display">
-              <div class="hero-airport">
-                <div class="hero-airport-code">JFK</div>
-                <div class="hero-airport-name">New York</div>
-              </div>
-              <div class="hero-arrow">→</div>
-              <div class="hero-airport">
-                <div class="hero-airport-code">SIN</div>
-                <div class="hero-airport-name">Singapore</div>
-              </div>
-            </div>
-            <div class="hero-route-path">
-              <span class="hero-node start">JFK</span>
-              <span class="hero-dash">───</span>
-              <span class="hero-node">LHR</span>
-              <span class="hero-dash">───</span>
-              <span class="hero-node">DXB</span>
-              <span class="hero-dash">───</span>
-              <span class="hero-node end">SIN</span>
-            </div>
-            <div style="display:flex;gap:10px;margin-top:12px;padding-top:12px;border-top:1px solid var(--border)">
-              <span class="badge badge-primary">📍 15,887 km</span>
-              <span class="badge badge-success">⏱ 19h 45m</span>
-              <span class="badge badge-orange">💵 $2,090</span>
-            </div>
-          </div>
+  <!-- Stats Strip -->
+  <div class="stats-strip">
+    <div class="container">
+      <div class="stats-grid">
+        <div class="stat-item reveal">
+          <span class="stat-num" data-target="47">0</span>
+          <span class="stat-lbl">Global Airports</span>
+          <span class="stat-desc">Across 7 world regions</span>
         </div>
-
-        <!-- Network stats -->
-        <div class="stat-pills" style="justify-content:center;margin-top:32px">
-          <div class="stat-pill"><span style="color:var(--primary)">✦</span><span class="stat-pill-value text-primary">47</span><span style="color:var(--muted);font-size:13px">Airports</span></div>
-          <div class="stat-pill"><span style="color:#0ea5e9">●</span><span class="stat-pill-value" style="color:#0ea5e9">21</span><span style="color:var(--muted);font-size:13px">Major Hubs</span></div>
-          <div class="stat-pill"><span style="color:#8b5cf6">●</span><span class="stat-pill-value" style="color:#8b5cf6">8</span><span style="color:var(--muted);font-size:13px">International</span></div>
-          <div class="stat-pill"><span style="color:#10b981">●</span><span class="stat-pill-value" style="color:#10b981">18</span><span style="color:var(--muted);font-size:13px">National</span></div>
-          <div class="stat-pill"><span style="color:#f97316">●</span><span class="stat-pill-value" style="color:#f97316">7</span><span style="color:var(--muted);font-size:13px">Regions</span></div>
-          <div class="stat-pill"><span style="color:var(--muted)">⇌</span><span class="stat-pill-value">264</span><span style="color:var(--muted);font-size:13px">Routes</span></div>
+        <div class="stat-item reveal delay-1">
+          <span class="stat-num" data-target="264">0</span>
+          <span class="stat-lbl">Flight Routes</span>
+          <span class="stat-desc">Bi-directional segments</span>
+        </div>
+        <div class="stat-item reveal delay-2">
+          <span class="stat-num" data-target="18">0</span>
+          <span class="stat-lbl">Airlines</span>
+          <span class="stat-desc">Emirates, SQ, Qantas…</span>
+        </div>
+        <div class="stat-item reveal delay-3">
+          <span class="stat-num" data-target="4">0</span>
+          <span class="stat-lbl">Optimisation Modes</span>
+          <span class="stat-desc">Cost · Time · Smart · Layover</span>
         </div>
       </div>
-    </section>
+    </div>
+  </div>
 
-    <!-- Features -->
-    <section class="features">
-      <div class="container">
-        <div class="section-tag">✦ Features</div>
-        <h2 class="section-title">Everything you need to plan the perfect route</h2>
-        <div class="features-grid">
-          <div class="feature-card">
-            <div class="feature-icon">🧮</div>
-            <div class="feature-title">Dijkstra's Algorithm</div>
-            <div class="feature-desc">Guaranteed-optimal shortest path computed in milliseconds across a weighted flight graph.</div>
-          </div>
-          <div class="feature-card">
-            <div class="feature-icon">🌍</div>
-            <div class="feature-title">Global Coverage</div>
-            <div class="feature-desc">47 airports spanning North America, Europe, Middle East, Africa, Asia, and Oceania.</div>
-          </div>
-          <div class="feature-card">
-            <div class="feature-icon">🗺</div>
-            <div class="feature-title">Interactive Map</div>
-            <div class="feature-desc">Great-circle arc routes drawn on a live Leaflet map with airport markers and popups.</div>
-          </div>
-          <div class="feature-card">
-            <div class="feature-icon">⚙</div>
-            <div class="feature-title">3 Optimisation Modes</div>
-            <div class="feature-desc">Optimise your route by shortest distance, fastest time, or lowest ticket cost.</div>
-          </div>
-          <div class="feature-card">
-            <div class="feature-icon">✈</div>
-            <div class="feature-title">18 Airlines</div>
-            <div class="feature-desc">Routes operated by Emirates, Singapore Airlines, Qantas, IndiGo, AirAsia, and 13 more.</div>
-          </div>
-          <div class="feature-card">
-            <div class="feature-icon">🌙</div>
-            <div class="feature-title">Dark & Light Mode</div>
-            <div class="feature-desc">Full dark mode support with persisted preference and matching map tile layers.</div>
-          </div>
+  <!-- Features -->
+  <section class="features">
+    <div class="container">
+      <div class="section-head reveal">
+        <div class="section-divider">
+          <div class="line"></div>
+          <div class="diamond"></div>
+          <div class="line"></div>
+        </div>
+        <div class="section-tag">Capabilities</div>
+        <h2>Everything you need to navigate smarter</h2>
+        <p>A complete flight routing system built on graph algorithms and relational database design.</p>
+      </div>
+      <div class="features-grid">
+        <div class="feature-card reveal delay-1" data-tilt>
+          <div class="feature-icon">🧮</div>
+          <h3>Dijkstra's Algorithm</h3>
+          <p>Guaranteed-optimal shortest paths computed across a weighted flight graph stored entirely in SQLite. Runs in milliseconds on 264 edges.</p>
+          <span class="feature-tag">Graph Theory</span>
+        </div>
+        <div class="feature-card reveal delay-2" data-tilt>
+          <div class="feature-icon">🗄</div>
+          <h3>Real SQL Database</h3>
+          <p>Normalised SQLite schema with airports, airlines, segments, and route history. Full CRUD with JOINs, indexes, and foreign key constraints.</p>
+          <span class="feature-tag">DBMS</span>
+        </div>
+        <div class="feature-card reveal delay-3" data-tilt>
+          <div class="feature-icon">🗺</div>
+          <h3>Interactive Globe Map</h3>
+          <p>Great-circle arc routes rendered live on a Leaflet dark map with airport markers, popups, and animated route highlighting.</p>
+          <span class="feature-tag">Geospatial</span>
+        </div>
+        <div class="feature-card reveal delay-1" data-tilt>
+          <div class="feature-icon">⚙</div>
+          <h3>4 Optimisation Modes</h3>
+          <p>Cheapest fare, fastest arrival, smart balanced score, or minimum layover connections — each a distinct Dijkstra weight function.</p>
+          <span class="feature-tag">Algorithms</span>
+        </div>
+        <div class="feature-card reveal delay-2" data-tilt>
+          <div class="feature-icon">✈</div>
+          <h3>18 Real Airlines</h3>
+          <p>Routes operated by Emirates, Singapore Airlines, Qantas, IndiGo, AirAsia, and 13 more — stored relationally with ratings and delay data.</p>
+          <span class="feature-tag">Aviation Data</span>
+        </div>
+        <div class="feature-card reveal delay-3" data-tilt>
+          <div class="feature-icon">📊</div>
+          <h3>Route History</h3>
+          <p>Every computed route is cached in the database with UPSERT semantics. Browse recent searches with full cost, time, and CO₂ stats.</p>
+          <span class="feature-tag">Analytics</span>
         </div>
       </div>
-    </section>
+    </div>
+  </section>
 
-    <!-- Airport types -->
-    <section class="types-section">
-      <div class="container">
-        <div class="section-tag">✦ Network</div>
-        <h2 class="section-title">National &amp; International Coverage</h2>
-        <p class="section-sub">Our network covers all three airport categories across every major world region.</p>
-        <div class="types-grid">
-          <div class="type-card">
-            <div class="type-dot" style="background:#0ea5e9"></div>
-            <div class="type-count" style="color:#0ea5e9">21</div>
-            <div class="type-label">Major Hubs</div>
-            <div style="font-size:11px;color:var(--subtle);margin-top:6px">JFK · LHR · DXB · SIN · NRT…</div>
-          </div>
-          <div class="type-card">
-            <div class="type-dot" style="background:#8b5cf6"></div>
-            <div class="type-count" style="color:#8b5cf6">8</div>
-            <div class="type-label">International Airports</div>
-            <div style="font-size:11px;color:var(--subtle);margin-top:6px">AMS · MAD · FCO · KUL · JNB…</div>
-          </div>
-          <div class="type-card">
-            <div class="type-dot" style="background:#10b981"></div>
-            <div class="type-count" style="color:#10b981">18</div>
-            <div class="type-label">National / Domestic</div>
-            <div style="font-size:11px;color:var(--subtle);margin-top:6px">EDI · MAN · BLR · MEL · DEN…</div>
-          </div>
-          <div class="type-card">
-            <div class="type-dot" style="background:#f97316"></div>
-            <div class="type-count" style="color:#f97316">7</div>
-            <div class="type-label">World Regions</div>
-            <div style="font-size:11px;color:var(--subtle);margin-top:6px">Americas · Europe · Asia · Oceania…</div>
-          </div>
+  <!-- Network / Airport Types -->
+  <section class="network" id="network">
+    <div class="container">
+      <div class="section-head reveal">
+        <div class="section-divider">
+          <div class="line"></div>
+          <div class="diamond"></div>
+          <div class="line"></div>
+        </div>
+        <div class="section-tag">Network Coverage</div>
+        <h2>Three tiers, seven regions</h2>
+        <p>A structured airport hierarchy — from major global hubs to regional domestic terminals — all stored and queried from a normalised SQL database.</p>
+      </div>
+      <div class="type-cards">
+        <div class="type-card reveal delay-1">
+          <div class="type-dot" style="background:#D4A853;box-shadow:0 0 12px #D4A85366"></div>
+          <h3>Major Hubs</h3>
+          <p>Global gateway airports with the highest connectivity and international route density.</p>
+          <div class="type-count">21</div>
+          <div class="type-examples" style="margin-top:10px;font-size:12px;color:var(--muted)">JFK · LHR · DXB · SIN · NRT · SYD…</div>
+        </div>
+        <div class="type-card reveal delay-2">
+          <div class="type-dot" style="background:#8B5CF6;box-shadow:0 0 12px #8B5CF666"></div>
+          <h3>International</h3>
+          <p>Major international airports serving cross-border traffic across regional corridors.</p>
+          <div class="type-count" style="color:#8B5CF6">8</div>
+          <div class="type-examples" style="margin-top:10px;font-size:12px;color:var(--muted)">AMS · MAD · FCO · KUL · JNB…</div>
+        </div>
+        <div class="type-card reveal delay-3">
+          <div class="type-dot" style="background:#10B981;box-shadow:0 0 12px #10B98166"></div>
+          <h3>National / Domestic</h3>
+          <p>Regional terminals connecting domestic routes within a country or sub-region.</p>
+          <div class="type-count" style="color:#10B981">18</div>
+          <div class="type-examples" style="margin-top:10px;font-size:12px;color:var(--muted)">EDI · MAN · BLR · MEL · DEN…</div>
         </div>
       </div>
-    </section>
+    </div>
+  </section>
 
-    <!-- CTA -->
-    <section class="cta-section">
-      <div class="container">
-        <div class="cta-box">
-          <div class="cta-title">Ready to find your optimal route?</div>
-          <div class="cta-sub">Open the planner and let Dijkstra's algorithm do the work.</div>
-          <div style="display:flex;gap:12px;justify-content:center;flex-wrap:wrap">
-            <a href="dashboard.html" class="btn btn-white btn-lg">Open Route Planner</a>
-            <a href="signup.html" class="btn btn-lg" style="border:2px solid rgba(255,255,255,.4);color:#fff;">Create Account</a>
-          </div>
-        </div>
+  <!-- CTA -->
+  <section class="cta-section">
+    <div class="container">
+      <div class="section-divider reveal">
+        <div class="line"></div>
+        <div class="diamond"></div>
+        <div class="line"></div>
       </div>
-    </section>
-  </main>
+      <h2 class="reveal">Ready to find your<br><em>optimal route?</em></h2>
+      <p class="reveal delay-1">Open the route planner and let Dijkstra's algorithm query the database to find your perfect flight path.</p>
+      <a href="dashboard.html" class="btn-primary reveal delay-2">Open Route Planner ✈</a>
+    </div>
+  </section>
 
   <div id="footer-container"></div>
 
-  <script src="js/data.js"></script>
   <script src="js/dijkstra.js"></script>
   <script src="js/main.js"></script>
+  <script>
+    // Splash
+    (function() {
+      const splash  = document.getElementById('splash');
+      const canvas  = document.getElementById('splash-canvas');
+      const ctx     = canvas.getContext('2d');
+      let stars     = [];
+      let raf;
+
+      function resize() {
+        canvas.width  = window.innerWidth;
+        canvas.height = window.innerHeight;
+        stars = Array.from({ length: 180 }, () => ({
+          x: Math.random() * canvas.width,
+          y: Math.random() * canvas.height,
+          r: Math.random() * 1.2 + 0.2,
+          o: Math.random() * 0.7 + 0.2,
+          s: (Math.random() - 0.5) * 0.08,
+        }));
+      }
+
+      function drawStars() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        stars.forEach(s => {
+          s.o += s.s;
+          if (s.o > 0.9 || s.o < 0.1) s.s *= -1;
+          ctx.beginPath();
+          ctx.arc(s.x, s.y, s.r, 0, Math.PI * 2);
+          ctx.fillStyle = `rgba(212,168,83,${s.o})`;
+          ctx.fill();
+        });
+        raf = requestAnimationFrame(drawStars);
+      }
+
+      resize();
+      window.addEventListener('resize', resize);
+      drawStars();
+
+      function dismiss() {
+        splash.classList.add('hide');
+        cancelAnimationFrame(raf);
+        setTimeout(() => { splash.style.display = 'none'; }, 800);
+      }
+
+      splash.addEventListener('click', dismiss);
+      setTimeout(dismiss, 3200);
+    })();
+
+    // Hero particles
+    (function() {
+      const c   = document.getElementById('hero-canvas');
+      if (!c) return;
+      const ctx = c.getContext('2d');
+      let pts   = [];
+
+      function resize() {
+        c.width  = c.offsetWidth;
+        c.height = c.offsetHeight;
+        pts = Array.from({ length: 60 }, () => ({
+          x: Math.random() * c.width, y: Math.random() * c.height,
+          vx: (Math.random() - 0.5) * 0.25, vy: (Math.random() - 0.5) * 0.25,
+          r: Math.random() * 1.4 + 0.4,
+        }));
+      }
+
+      function draw() {
+        ctx.clearRect(0, 0, c.width, c.height);
+        pts.forEach(p => {
+          p.x += p.vx; p.y += p.vy;
+          if (p.x < 0) p.x = c.width;
+          if (p.x > c.width) p.x = 0;
+          if (p.y < 0) p.y = c.height;
+          if (p.y > c.height) p.y = 0;
+          ctx.beginPath();
+          ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
+          ctx.fillStyle = 'rgba(212,168,83,0.45)';
+          ctx.fill();
+        });
+        requestAnimationFrame(draw);
+      }
+
+      resize();
+      new ResizeObserver(resize).observe(c);
+      draw();
+    })();
+
+    // Scroll reveal
+    const revealObserver = new IntersectionObserver((entries) => {
+      entries.forEach(e => { if (e.isIntersecting) { e.target.classList.add('visible'); revealObserver.unobserve(e.target); } });
+    }, { threshold: 0.12 });
+    document.querySelectorAll('.reveal').forEach(el => revealObserver.observe(el));
+
+    // Counter animation
+    const counterObserver = new IntersectionObserver((entries) => {
+      entries.forEach(e => {
+        if (!e.isIntersecting) return;
+        const el     = e.target;
+        const target = +el.dataset.target;
+        const dur    = 1600;
+        const start  = performance.now();
+        function tick(now) {
+          const t = Math.min((now - start) / dur, 1);
+          el.textContent = Math.round(t * target);
+          if (t < 1) requestAnimationFrame(tick);
+          else el.textContent = target;
+        }
+        requestAnimationFrame(tick);
+        counterObserver.unobserve(el);
+      });
+    }, { threshold: 0.5 });
+    document.querySelectorAll('.stat-num[data-target]').forEach(el => counterObserver.observe(el));
+
+    // Feature card tilt
+    document.querySelectorAll('[data-tilt]').forEach(card => {
+      card.addEventListener('mousemove', e => {
+        const r = card.getBoundingClientRect();
+        const x = (e.clientX - r.left) / r.width  - 0.5;
+        const y = (e.clientY - r.top)  / r.height - 0.5;
+        card.style.transform = `perspective(600px) rotateY(${x * 8}deg) rotateX(${-y * 8}deg) translateY(-4px)`;
+      });
+      card.addEventListener('mouseleave', () => { card.style.transform = ''; });
+    });
+  </script>
 </body>
 </html>

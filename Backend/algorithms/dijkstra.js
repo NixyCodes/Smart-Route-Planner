@@ -1,29 +1,28 @@
-// ══════════════════════════════════════════════════════════════
-//  SkyRoute – Dijkstra's Algorithm
-// ══════════════════════════════════════════════════════════════
-
-const {
-    SEGMENTS,
-    AIRPORT_MAP,
-    AIRLINE_MAP,
-    AIRCRAFT_MAP
-} = require('../data/data');
+const FlightSegment = require('../models/FlightSegment');
+const Airport = require('../models/Airport');
 
 function dijkstra(sourceId, destId, optimizeBy = 'distance') {
+    const rawSegments = FlightSegment.getEdgeList();
+    const airports    = Airport.getAll();
+
+    // Build lookup maps
+    const airportMap  = Object.fromEntries(airports.map(a => [a.iata_code, a]));
+
     // Build adjacency graph
     const graph = {};
-    for (const seg of SEGMENTS) {
-        if (!graph[seg.from]) graph[seg.from] = [];
-        const weight = optimizeBy === 'distance' ? seg.distance
-            : optimizeBy === 'time' ? seg.time
-                : seg.cost;
-        graph[seg.from].push({ to: seg.to, weight, seg });
+    for (const seg of rawSegments) {
+        if (!graph[seg.origin_code]) graph[seg.origin_code] = [];
+        const weight =
+            optimizeBy === 'time' ? seg.duration_min :
+            optimizeBy === 'cost' ? seg.base_cost_usd :
+            seg.distance_km;
+        graph[seg.origin_code].push({ to: seg.destination_code, weight, seg });
     }
 
-    const dist = {};
-    const prev = {};
+    const nodes = new Set(rawSegments.flatMap(s => [s.origin_code, s.destination_code]));
+    const dist  = {};
+    const prev  = {};
     const visited = new Set();
-    const nodes = new Set(SEGMENTS.flatMap(s => [s.from, s.to]));
 
     for (const n of nodes) { dist[n] = Infinity; prev[n] = null; }
     dist[sourceId] = 0;
@@ -51,22 +50,34 @@ function dijkstra(sourceId, destId, optimizeBy = 'distance') {
     if (!isFinite(dist[destId])) return { found: false };
 
     // Reconstruct path
-    const path = [];
+    const path  = [];
     const steps = [];
     let cur = destId;
+
     while (cur) {
         path.unshift(cur);
         const p = prev[cur];
         if (p) {
             const { seg } = p;
+            const origin = airportMap[seg.origin_code];
+            const dest   = airportMap[seg.destination_code];
+
+            // Pull airline and aircraft names from DB via a JOIN-based lookup
+            const db      = require('../db/database').getDb();
+            const airline = db.prepare('SELECT airline_name FROM airlines WHERE iata_code = ?').get(seg.airline_code);
+            const aircraft= db.prepare('SELECT model_name  FROM aircraft  WHERE model_code  = ?').get(seg.aircraft_code);
+
             steps.unshift({
-                from: seg.from, to: seg.to,
-                fromName: AIRPORT_MAP[seg.from]?.name || seg.from,
-                toName: AIRPORT_MAP[seg.to]?.name || seg.to,
-                distance: seg.distance, time: seg.time, cost: seg.cost,
-                airline: AIRLINE_MAP[seg.airline]?.name || seg.airline,
-                aircraft: AIRCRAFT_MAP[seg.aircraft]?.type || seg.aircraft,
-                segId: seg.id,
+                from:     seg.origin_code,
+                to:       seg.destination_code,
+                fromName: origin?.city_name  || seg.origin_code,
+                toName:   dest?.city_name    || seg.destination_code,
+                distance: seg.distance_km,
+                time:     seg.duration_min,
+                cost:     seg.base_cost_usd,
+                airline:  airline?.airline_name || seg.airline_code,
+                aircraft: aircraft?.model_name  || seg.aircraft_code,
+                segId:    seg.segment_id,
             });
             cur = p.node;
         } else {
@@ -75,39 +86,13 @@ function dijkstra(sourceId, destId, optimizeBy = 'distance') {
     }
 
     return {
-        found: true, path, steps,
+        found:         true,
+        path,
+        steps,
         totalDistance: steps.reduce((s, r) => s + r.distance, 0),
-        totalTime: steps.reduce((s, r) => s + r.time, 0),
-        totalCost: steps.reduce((s, r) => s + r.cost, 0),
+        totalTime:     steps.reduce((s, r) => s + r.time, 0),
+        totalCost:     steps.reduce((s, r) => s + r.cost, 0),
     };
 }
-
-function formatTime(minutes) {
-    const h = Math.floor(minutes / 60);
-    const m = minutes % 60;
-    if (h === 0) return `${m}m`;
-    if (m === 0) return `${h}h`;
-    return `${h}h ${m}m`;
-}
-
-// Great-circle intermediate points for map arcs
-function greatCirclePoints(lat1, lng1, lat2, lng2, n = 60) {
-    const R = Math.PI / 180;
-    const p1 = lat1 * R, l1 = lng1 * R;
-    const p2 = lat2 * R, l2 = lng2 * R;
-    const d = 2 * Math.asin(Math.sqrt(Math.sin((p2 - p1) / 2) ** 2 + Math.cos(p1) * Math.cos(p2) * Math.sin((l2 - l1) / 2) ** 2));
-    if (d === 0) return [[lat1, lng1]];
-    const pts = [];
-    for (let i = 0; i <= n; i++) {
-        const f = i / n;
-        const A = Math.sin((1 - f) * d) / Math.sin(d);
-        const B = Math.sin(f * d) / Math.sin(d);
-        const x = A * Math.cos(p1) * Math.cos(l1) + B * Math.cos(p2) * Math.cos(l2);
-        const y = A * Math.cos(p1) * Math.sin(l1) + B * Math.cos(p2) * Math.sin(l2);
-        const z = A * Math.sin(p1) + B * Math.sin(p2);
-        pts.push([Math.atan2(z, Math.sqrt(x * x + y * y)) / R, Math.atan2(y, x) / R]);
-    }
-    return pts;
-};
 
 module.exports = dijkstra;
