@@ -73,6 +73,24 @@ CREATE TABLE IF NOT EXISTS optimized_routes (
   UNIQUE(origin_code, destination_code, optimization_type)
 );
 
+-- ── User Search History (Append-only log) ──────────────────────
+
+CREATE TABLE IF NOT EXISTS search_history (
+  search_id          INTEGER PRIMARY KEY AUTOINCREMENT,
+  origin_code        TEXT NOT NULL,
+  destination_code   TEXT NOT NULL,
+  optimization_type  TEXT NOT NULL,
+  path_codes         TEXT NOT NULL,   -- comma-separated IATA codes
+  total_distance_km  INTEGER NOT NULL,
+  total_duration_min INTEGER NOT NULL,
+  total_cost_usd     INTEGER NOT NULL,
+  total_layover_min  INTEGER NOT NULL DEFAULT 0,
+  segment_count      INTEGER NOT NULL,
+  searched_at        DATETIME DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY (origin_code)      REFERENCES airports(iata_code),
+  FOREIGN KEY (destination_code) REFERENCES airports(iata_code)
+);
+
 -- ── Indexes ──────────────────────────────────────────────────
 
 CREATE INDEX IF NOT EXISTS idx_segments_origin      ON flight_segments(origin_code);

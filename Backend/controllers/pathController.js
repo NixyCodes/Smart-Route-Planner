@@ -1,5 +1,6 @@
 const { optimize, compareAll } = require('../algorithms/optimizer');
 const OptimizedRoute = require('../models/OptimizedRoute');
+const SearchHistory = require('../models/SearchHistory');
 
 const VALID_MODES = ['cheapest', 'fastest', 'smart', 'min_layover'];
 
@@ -18,7 +19,7 @@ exports.getShortestPath = (req, res) => {
         const result = optimize(source, destination, mode);
 
         if (result.found) {
-            OptimizedRoute.upsert({
+            const routeData = {
                 originCode:       source,
                 destinationCode:  destination,
                 optimizationType: mode,
@@ -27,7 +28,13 @@ exports.getShortestPath = (req, res) => {
                 totalDuration:    result.totalTime,
                 totalCost:        result.totalCost,
                 totalLayover:     result.totalLayover,
-            });
+            };
+
+            // Global cache update
+            OptimizedRoute.upsert(routeData);
+
+            // Specific user search log (append-only)
+            SearchHistory.insert(routeData);
         }
 
         return res.json(result);
